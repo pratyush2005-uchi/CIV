@@ -1,0 +1,842 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<title>The Nine Billion Names</title>
+	<style>
+		:root {
+			--ink: #191412;
+			--paper: #f6f2e8;
+			--accent: #b24a2f;
+			--accent-soft: #f2c8a0;
+			--mist: #d9e4cf;
+			--good: #1f6e43;
+			--bad: #a12222;
+			--card: rgba(255, 255, 255, 0.8);
+			--border: rgba(25, 20, 18, 0.14);
+			--shadow: 0 18px 45px rgba(25, 20, 18, 0.12);
+		}
+
+		* {
+			box-sizing: border-box;
+		}
+
+		body {
+			margin: 0;
+			color: var(--ink);
+			font-family: "Avenir Next", "Gill Sans", "Trebuchet MS", sans-serif;
+			min-height: 100vh;
+			background:
+				radial-gradient(circle at 12% 10%, rgba(178, 74, 47, 0.18), transparent 30%),
+				radial-gradient(circle at 90% 5%, rgba(69, 103, 143, 0.16), transparent 28%),
+				linear-gradient(160deg, #f8f4ea 0%, #ece4cf 55%, #d7dfcb 100%);
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			padding: 1.4rem;
+		}
+
+		.page {
+			width: min(980px, 100%);
+			background: linear-gradient(180deg, rgba(255, 255, 255, 0.78), rgba(255, 255, 255, 0.67));
+			border: 1px solid var(--border);
+			border-radius: 22px;
+			box-shadow: var(--shadow);
+			backdrop-filter: blur(6px);
+			overflow: hidden;
+			animation: rise 620ms ease-out both;
+		}
+
+		@keyframes rise {
+			from {
+				opacity: 0;
+				transform: translateY(18px) scale(0.985);
+			}
+			to {
+				opacity: 1;
+				transform: translateY(0) scale(1);
+			}
+		}
+
+		header {
+			padding: 2rem 1.4rem 1.1rem;
+			border-bottom: 1px solid var(--border);
+			background: linear-gradient(90deg, rgba(242, 200, 160, 0.24), rgba(217, 228, 207, 0.35));
+		}
+
+		h1 {
+			margin: 0;
+			line-height: 1.05;
+			letter-spacing: 0.02em;
+			font-size: clamp(1.6rem, 3.8vw, 2.55rem);
+			font-family: "Iowan Old Style", "Times New Roman", serif;
+			font-weight: 700;
+		}
+
+		.subtitle {
+			margin-top: 0.55rem;
+			color: rgba(25, 20, 18, 0.84);
+			max-width: 73ch;
+			line-height: 1.42;
+			font-size: 0.97rem;
+		}
+
+		main {
+			padding: 1.25rem;
+			display: grid;
+			gap: 1rem;
+		}
+
+		.card {
+			border: 1px solid var(--border);
+			border-radius: 16px;
+			background: var(--card);
+			padding: 1rem;
+			animation: fadeIn 460ms ease-out both;
+		}
+
+		.card:nth-of-type(2) {
+			animation-delay: 100ms;
+		}
+
+		@keyframes fadeIn {
+			from {
+				opacity: 0;
+				transform: translateY(12px);
+			}
+			to {
+				opacity: 1;
+				transform: translateY(0);
+			}
+		}
+
+		.card-title {
+			margin: 0 0 0.65rem;
+			font-family: "Iowan Old Style", "Times New Roman", serif;
+			font-size: 1.28rem;
+			letter-spacing: 0.01em;
+		}
+
+		.controls {
+			display: grid;
+			grid-template-columns: minmax(180px, 280px) auto;
+			gap: 0.75rem;
+			align-items: end;
+			margin-bottom: 0.55rem;
+		}
+
+		label {
+			display: block;
+			font-size: 0.88rem;
+			margin-bottom: 0.42rem;
+			color: rgba(25, 20, 18, 0.8);
+		}
+
+		input {
+			width: 100%;
+			border: 1px solid rgba(25, 20, 18, 0.25);
+			border-radius: 10px;
+			padding: 0.72rem 0.8rem;
+			background: #fffdf7;
+			color: var(--ink);
+			font-size: 1rem;
+			font-family: "Menlo", "Monaco", "Courier New", monospace;
+		}
+
+		input:focus {
+			outline: 2px solid rgba(178, 74, 47, 0.35);
+			outline-offset: 1px;
+			border-color: rgba(178, 74, 47, 0.55);
+		}
+
+		button {
+			border: none;
+			border-radius: 999px;
+			background: linear-gradient(92deg, var(--accent), #9a3e26);
+			color: #fff;
+			font-size: 0.95rem;
+			font-weight: 650;
+			padding: 0.76rem 1.2rem;
+			cursor: pointer;
+			box-shadow: 0 8px 18px rgba(178, 74, 47, 0.28);
+			transition: transform 140ms ease, box-shadow 140ms ease, opacity 140ms ease;
+		}
+
+		button:hover {
+			transform: translateY(-1px);
+			box-shadow: 0 12px 22px rgba(178, 74, 47, 0.3);
+		}
+
+		button:disabled {
+			opacity: 0.48;
+			cursor: not-allowed;
+			transform: none;
+			box-shadow: none;
+		}
+
+		.rules {
+			margin-top: 0.45rem;
+			font-size: 0.86rem;
+			color: rgba(25, 20, 18, 0.7);
+			line-height: 1.5;
+		}
+
+		.alert {
+			margin-top: 0.7rem;
+			border-radius: 10px;
+			padding: 0.64rem 0.75rem;
+			font-size: 0.92rem;
+			border: 1px solid transparent;
+			display: none;
+		}
+
+		.alert.show {
+			display: block;
+		}
+
+		.alert.good {
+			color: var(--good);
+			border-color: rgba(31, 110, 67, 0.25);
+			background: rgba(31, 110, 67, 0.08);
+		}
+
+		.alert.bad {
+			color: var(--bad);
+			border-color: rgba(161, 34, 34, 0.25);
+			background: rgba(161, 34, 34, 0.08);
+		}
+
+		.result-grid {
+			margin-top: 0.78rem;
+			display: grid;
+			gap: 0.58rem;
+			grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+		}
+
+		.stat {
+			background: rgba(255, 255, 255, 0.65);
+			border: 1px solid var(--border);
+			border-radius: 12px;
+			padding: 0.72rem;
+		}
+
+		.stat-label {
+			font-size: 0.78rem;
+			text-transform: uppercase;
+			letter-spacing: 0.08em;
+			color: rgba(25, 20, 18, 0.58);
+			margin-bottom: 0.2rem;
+		}
+
+		.stat-value {
+			font-family: "Menlo", "Monaco", "Courier New", monospace;
+			font-size: 0.95rem;
+			word-break: break-word;
+		}
+
+		.stat-value.big {
+			font-size: 1.06rem;
+			font-weight: 700;
+		}
+
+		.math-details {
+			margin-top: 0.8rem;
+			border: 1px dashed rgba(25, 20, 18, 0.22);
+			border-radius: 12px;
+			background: rgba(255, 255, 255, 0.55);
+		}
+
+		.math-details summary {
+			cursor: pointer;
+			font-weight: 600;
+			padding: 0.66rem 0.78rem;
+			list-style: none;
+		}
+
+		.math-details summary::-webkit-details-marker {
+			display: none;
+		}
+
+		.math-details summary::before {
+			content: "+ ";
+			font-weight: 700;
+			color: var(--accent);
+		}
+
+		.math-details[open] summary::before {
+			content: "- ";
+		}
+
+		.math-details-content {
+			padding: 0 0.78rem 0.76rem;
+			font-size: 0.88rem;
+			line-height: 1.5;
+			color: rgba(25, 20, 18, 0.84);
+		}
+
+		.runtime-controls {
+			margin-top: 0.65rem;
+			padding: 0.72rem;
+			border-radius: 12px;
+			border: 1px solid var(--border);
+			background: rgba(255, 255, 255, 0.58);
+		}
+
+		.range-wrap {
+			display: grid;
+			grid-template-columns: 1fr auto;
+			gap: 0.7rem;
+			align-items: center;
+		}
+
+		input[type="range"] {
+			padding: 0;
+			accent-color: var(--accent);
+			cursor: pointer;
+		}
+
+		#throughputSliderValue {
+			font-family: "Menlo", "Monaco", "Courier New", monospace;
+			font-size: 0.87rem;
+			font-weight: 650;
+		}
+
+		.runtime-note {
+			margin-top: 0.48rem;
+			font-size: 0.82rem;
+			color: rgba(25, 20, 18, 0.65);
+		}
+
+		.names-controls {
+			display: flex;
+			gap: 0.7rem;
+			align-items: center;
+			flex-wrap: wrap;
+		}
+
+		.hint {
+			color: rgba(25, 20, 18, 0.68);
+			font-size: 0.87rem;
+			line-height: 1.4;
+		}
+
+		.names-box {
+			margin-top: 0.78rem;
+			border: 1px solid var(--border);
+			background: rgba(255, 255, 255, 0.64);
+			border-radius: 12px;
+			padding: 0.84rem;
+			min-height: 110px;
+		}
+
+		.names-list {
+			margin: 0;
+			padding-left: 1.2rem;
+			columns: 2;
+			column-gap: 1.2rem;
+			font-family: "Menlo", "Monaco", "Courier New", monospace;
+			font-size: 0.84rem;
+			line-height: 1.48;
+		}
+
+		.names-list li {
+			break-inside: avoid;
+			margin-bottom: 0.2rem;
+		}
+
+		.footnote {
+			margin-top: 0.65rem;
+			font-size: 0.8rem;
+			color: rgba(25, 20, 18, 0.63);
+		}
+
+		@media (max-width: 720px) {
+			.controls {
+				grid-template-columns: 1fr;
+			}
+
+			.names-list {
+				columns: 1;
+			}
+		}
+	</style>
+</head>
+<body>
+	<section class="page">
+		<header>
+			<h1>The Nine Billion Names</h1>
+			<p class="subtitle">
+				Inspired by Arthur C. Clarke's short story. Set the alphabet size, test whether the naming rules can reach nine billion names,
+				then generate a sample of 100 distinct valid names.
+			</p>
+		</header>
+
+		<main>
+			<article class="card">
+				<h2 class="card-title">1) Alphabet And Feasibility</h2>
+
+				<div class="controls">
+					<div>
+						<label for="alphabetSize">Number of characters in your alphabet</label>
+						<input id="alphabetSize" type="number" min="1" step="1" placeholder="Example: 24 or 65" />
+					</div>
+					<button id="analyzeBtn" type="button">Generate</button>
+				</div>
+
+				<p class="rules">
+					Rules used for counting names: each name has length 1 to 9, and no character may appear more than 3 times in a row.
+				</p>
+
+				<div id="statusAlert" class="alert"></div>
+
+				<div class="result-grid">
+					<div class="stat">
+						<div class="stat-label">Alphabet Mode</div>
+						<div id="alphabetMode" class="stat-value">-</div>
+					</div>
+					<div class="stat">
+						<div class="stat-label">Alphabet Preview</div>
+						<div id="alphabetPreview" class="stat-value">-</div>
+					</div>
+					<div class="stat">
+						<div class="stat-label">Total Valid Names</div>
+						<div id="totalNames" class="stat-value big">-</div>
+					</div>
+					<div class="stat">
+						<div class="stat-label">True-Name Portion</div>
+						<div id="portion" class="stat-value">-</div>
+					</div>
+				</div>
+
+				<details class="math-details">
+					<summary>Math details (click to show/hide)</summary>
+					<div class="math-details-content">
+						<p>
+							We count valid names by dynamic programming. Let f(L, r) be the number of length-L names whose last run
+							has length r (r = 1, 2, 3).
+						</p>
+						<p>
+							Transitions for alphabet size n:
+							f(L, 1) = (n - 1) x [f(L-1,1) + f(L-1,2) + f(L-1,3)],
+							f(L, 2) = f(L-1,1),
+							f(L, 3) = f(L-1,2).
+						</p>
+						<p>
+							Base case: f(1,1) = n, f(1,2)=0, f(1,3)=0. Total valid names = sum over L=1..9 of [f(L,1)+f(L,2)+f(L,3)].
+						</p>
+					</div>
+				</details>
+			</article>
+
+			<article class="card">
+				<h2 class="card-title">2) Runtime To Generate Every Name</h2>
+
+				<p class="rules">
+					Assumption: a modern computer can enumerate names with deterministic generation
+					(no randomness), in lexical-like order (a, b, c... aa, ab...).
+				</p>
+
+				<div class="runtime-controls">
+					<label for="throughputSlider">Adjust assumed throughput (names per second)</label>
+					<div class="range-wrap">
+						<input id="throughputSlider" type="range" min="1000000" max="1000000000" step="1000000" value="100000000" />
+						<div id="throughputSliderValue">100,000,000 names/second</div>
+					</div>
+					<div class="runtime-note">Range: 1 million to 1 billion names/second. Runtime updates live.</div>
+				</div>
+
+				<div class="result-grid">
+					<div class="stat">
+						<div class="stat-label">Complexity</div>
+						<div id="runtimeComplexity" class="stat-value">-</div>
+					</div>
+					<div class="stat">
+						<div class="stat-label">Assumed Throughput</div>
+						<div id="throughput" class="stat-value">-</div>
+					</div>
+					<div class="stat">
+						<div class="stat-label">Estimated Runtime (seconds)</div>
+						<div id="runtimeSeconds" class="stat-value big">-</div>
+					</div>
+					<div class="stat">
+						<div class="stat-label">Estimated Runtime (human)</div>
+						<div id="runtimeHuman" class="stat-value">-</div>
+					</div>
+				</div>
+			</article>
+
+			<article class="card">
+				<h2 class="card-title">3) Generate 100 Distinct Names</h2>
+
+				<div class="names-controls">
+					<button id="namesBtn" type="button" disabled>Generate 100 Names</button>
+					<span class="hint">This uses your current alphabet and obeys the same rule set.</span>
+				</div>
+
+				<div id="namesBox" class="names-box">
+					Run the first section, then generate names here.
+				</div>
+				<div class="footnote">Control ASCII characters are shown in escaped form such as \x00.</div>
+			</article>
+		</main>
+	</section>
+
+	<script>
+		const TARGET_NAMES = 9_000_000_000;
+		const ASCII_LIMIT = 128;
+		const RESULT_PREVIEW_LIMIT = 60;
+		const NAME_TARGET_COUNT = 100;
+		const DEFAULT_NAMES_PER_SECOND_ASSUMPTION = 100_000_000;
+
+		const analyzeBtn = document.getElementById("analyzeBtn");
+		const namesBtn = document.getElementById("namesBtn");
+		const alphabetSizeInput = document.getElementById("alphabetSize");
+		const throughputSlider = document.getElementById("throughputSlider");
+		const throughputSliderValue = document.getElementById("throughputSliderValue");
+
+		const statusAlert = document.getElementById("statusAlert");
+		const alphabetModeEl = document.getElementById("alphabetMode");
+		const alphabetPreviewEl = document.getElementById("alphabetPreview");
+		const totalNamesEl = document.getElementById("totalNames");
+		const portionEl = document.getElementById("portion");
+		const runtimeComplexityEl = document.getElementById("runtimeComplexity");
+		const throughputEl = document.getElementById("throughput");
+		const runtimeSecondsEl = document.getElementById("runtimeSeconds");
+		const runtimeHumanEl = document.getElementById("runtimeHuman");
+		const namesBox = document.getElementById("namesBox");
+
+		const appState = {
+			alphabetRaw: [],
+			alphabetDisplay: [],
+			totalValidNames: 0,
+			namesPerSecond: DEFAULT_NAMES_PER_SECOND_ASSUMPTION,
+			isFeasible: false,
+			analyzed: false
+		};
+
+		analyzeBtn.addEventListener("click", runAnalysis);
+		namesBtn.addEventListener("click", generateDistinctNames);
+		throughputSlider.addEventListener("input", onThroughputChange);
+
+		updateThroughputLabel();
+		updateRuntimeSection();
+
+		function runAnalysis() {
+			const n = parseInteger(alphabetSizeInput.value);
+
+			if (!Number.isInteger(n) || n < 1) {
+				showAlert("Please enter an integer greater than or equal to 1.", false);
+				resetComputedFields();
+				namesBtn.disabled = true;
+				appState.analyzed = false;
+				return;
+			}
+
+			if (n > 26 && n > ASCII_LIMIT) {
+				showAlert("ASCII mode supports up to 128 characters (codes 0-127). Enter 128 or less.", false);
+				resetComputedFields();
+				namesBtn.disabled = true;
+				appState.analyzed = false;
+				return;
+			}
+
+			const alphabet = buildAlphabet(n);
+			const totalValidNames = countValidNames(alphabet.raw.length);
+			const feasible = totalValidNames >= TARGET_NAMES;
+
+			appState.alphabetRaw = alphabet.raw;
+			appState.alphabetDisplay = alphabet.display;
+			appState.totalValidNames = totalValidNames;
+			appState.isFeasible = feasible;
+			appState.analyzed = true;
+
+			alphabetModeEl.textContent = alphabet.modeLabel;
+			alphabetPreviewEl.textContent = alphabetPreview(alphabet.display, RESULT_PREVIEW_LIMIT);
+			totalNamesEl.textContent = formatInteger(totalValidNames);
+
+			const ratio = TARGET_NAMES / totalValidNames;
+			const ratioPct = ratio * 100;
+			portionEl.textContent = "9,000,000,000 / " + formatInteger(totalValidNames) + " = " + formatDecimal(ratio, 10) + " (" + formatDecimal(ratioPct, 6) + "%)";
+			updateRuntimeSection();
+
+			if (feasible) {
+				showAlert("This alphabet is long enough to generate at least 9 billion valid names.", true);
+			} else {
+				showAlert("This alphabet is too short to reach 9 billion names under the rules.", false);
+			}
+
+			namesBtn.disabled = false;
+			namesBox.textContent = "Ready. Click \"Generate 100 Names\" to produce a sample.";
+		}
+
+		function generateDistinctNames() {
+			if (!appState.analyzed) {
+				namesBox.textContent = "Run analysis first.";
+				return;
+			}
+
+			const possible = appState.totalValidNames;
+			if (possible < NAME_TARGET_COUNT) {
+				namesBox.textContent = "Only " + formatInteger(possible) + " distinct names exist for this alphabet and rule set, so 100 distinct names cannot be generated.";
+				return;
+			}
+
+			const names = new Set();
+			const maxAttempts = NAME_TARGET_COUNT * 300;
+			let attempts = 0;
+
+			while (names.size < NAME_TARGET_COUNT && attempts < maxAttempts) {
+				names.add(buildRandomName(appState.alphabetRaw));
+				attempts += 1;
+			}
+
+			if (names.size < NAME_TARGET_COUNT) {
+				namesBox.textContent = "Generation stalled due to collisions. Try again; this can happen with tight name spaces.";
+				return;
+			}
+
+			const list = document.createElement("ol");
+			list.className = "names-list";
+
+			Array.from(names)
+				.sort((a, b) => a.localeCompare(b))
+				.forEach((rawName) => {
+					const li = document.createElement("li");
+					li.textContent = escapeName(rawName);
+					list.appendChild(li);
+				});
+
+			namesBox.innerHTML = "";
+			namesBox.appendChild(list);
+		}
+
+		function parseInteger(value) {
+			if (typeof value !== "string") {
+				return NaN;
+			}
+			const trimmed = value.trim();
+			if (trimmed.length === 0) {
+				return NaN;
+			}
+			return Number(trimmed);
+		}
+
+		function buildAlphabet(n) {
+			if (n <= 26) {
+				const raw = [];
+				for (let code = 65; code < 65 + n; code += 1) {
+					raw.push(String.fromCharCode(code));
+				}
+				return {
+					raw,
+					display: raw.map(escapeChar),
+					modeLabel: "English uppercase A-" + String.fromCharCode(64 + n)
+				};
+			}
+
+			const raw = [];
+			for (let code = 0; code < n; code += 1) {
+				raw.push(String.fromCharCode(code));
+			}
+
+			return {
+				raw,
+				display: raw.map(escapeChar),
+				modeLabel: "ASCII codes 0-" + String(n - 1)
+			};
+		}
+
+		function countValidNames(alphabetLength) {
+			if (alphabetLength <= 0) {
+				return 0;
+			}
+
+			let streakCounts = [0, alphabetLength, 0, 0];
+			let total = alphabetLength;
+
+			for (let len = 2; len <= 9; len += 1) {
+				const next = [0, 0, 0, 0];
+				const allPrev = streakCounts[1] + streakCounts[2] + streakCounts[3];
+
+				next[1] = allPrev * (alphabetLength - 1);
+				next[2] = streakCounts[1];
+				next[3] = streakCounts[2];
+
+				total += next[1] + next[2] + next[3];
+				streakCounts = next;
+			}
+
+			return total;
+		}
+
+		function buildRandomName(alphabet) {
+			const length = randomInt(1, 9);
+			let name = "";
+
+			let lastIndex = randomInt(0, alphabet.length - 1);
+			let runLength = 1;
+			name += alphabet[lastIndex];
+
+			for (let i = 1; i < length; i += 1) {
+				const forceDifferent = runLength >= 3;
+				let useSame = false;
+
+				if (!forceDifferent && alphabet.length > 1) {
+					useSame = Math.random() < 0.34;
+				}
+
+				let nextIndex;
+				if (useSame || alphabet.length === 1) {
+					nextIndex = lastIndex;
+				} else {
+					nextIndex = randomDifferentIndex(alphabet.length, lastIndex);
+				}
+
+				if (nextIndex === lastIndex) {
+					runLength += 1;
+				} else {
+					runLength = 1;
+				}
+
+				lastIndex = nextIndex;
+				name += alphabet[nextIndex];
+			}
+
+			return name;
+		}
+
+		function randomDifferentIndex(size, forbiddenIndex) {
+			if (size <= 1) {
+				return forbiddenIndex;
+			}
+			let candidate = randomInt(0, size - 1);
+			while (candidate === forbiddenIndex) {
+				candidate = randomInt(0, size - 1);
+			}
+			return candidate;
+		}
+
+		function randomInt(min, max) {
+			return Math.floor(Math.random() * (max - min + 1)) + min;
+		}
+
+		function escapeChar(char) {
+			const code = char.charCodeAt(0);
+
+			if (code >= 33 && code <= 126 && char !== "\\") {
+				return char;
+			}
+
+			if (char === "\\") {
+				return "\\\\";
+			}
+
+			if (code === 32) {
+				return "\\x20";
+			}
+
+			const hex = code.toString(16).toUpperCase().padStart(2, "0");
+			return "\\x" + hex;
+		}
+
+		function escapeName(rawName) {
+			let out = "";
+			for (const ch of rawName) {
+				out += escapeChar(ch);
+			}
+			return out;
+		}
+
+		function alphabetPreview(displayChars, maxChars) {
+			if (displayChars.length <= maxChars) {
+				return displayChars.join(" ");
+			}
+			return displayChars.slice(0, maxChars).join(" ") + " ... (" + displayChars.length + " total)";
+		}
+
+		function formatInteger(value) {
+			return Number(value).toLocaleString("en-US", { maximumFractionDigits: 0 });
+		}
+
+		function formatDecimal(value, digits) {
+			if (!Number.isFinite(value)) {
+				return "-";
+			}
+			return value.toLocaleString("en-US", {
+				maximumFractionDigits: digits,
+				minimumFractionDigits: 0
+			});
+		}
+
+		function formatDuration(seconds) {
+			if (!Number.isFinite(seconds)) {
+				return "-";
+			}
+
+			if (seconds < 1) {
+				return "less than 1 second";
+			}
+
+			const minute = 60;
+			const hour = 3600;
+			const day = 86400;
+			const year = 31557600;
+
+			if (seconds < minute) {
+				return formatDecimal(seconds, 2) + " seconds";
+			}
+			if (seconds < hour) {
+				return formatDecimal(seconds / minute, 2) + " minutes";
+			}
+			if (seconds < day) {
+				return formatDecimal(seconds / hour, 2) + " hours";
+			}
+			if (seconds < year) {
+				return formatDecimal(seconds / day, 2) + " days";
+			}
+
+			return formatDecimal(seconds / year, 2) + " years";
+		}
+
+		function onThroughputChange() {
+			appState.namesPerSecond = Number(throughputSlider.value);
+			updateThroughputLabel();
+			updateRuntimeSection();
+		}
+
+		function updateThroughputLabel() {
+			throughputSliderValue.textContent = formatInteger(appState.namesPerSecond) + " names/second";
+		}
+
+		function updateRuntimeSection() {
+			runtimeComplexityEl.textContent = "O(T), where T is the total number of valid names to enumerate";
+			throughputEl.textContent = formatInteger(appState.namesPerSecond) + " names/second";
+
+			if (!appState.analyzed) {
+				runtimeSecondsEl.textContent = "-";
+				runtimeHumanEl.textContent = "Run section 1 first";
+				return;
+			}
+
+			const runtimeSeconds = appState.totalValidNames / appState.namesPerSecond;
+			runtimeSecondsEl.textContent = formatDecimal(runtimeSeconds, 6);
+			runtimeHumanEl.textContent = formatDuration(runtimeSeconds);
+		}
+
+		function showAlert(message, isGood) {
+			statusAlert.textContent = message;
+			statusAlert.className = "alert show " + (isGood ? "good" : "bad");
+		}
+
+		function resetComputedFields() {
+			alphabetModeEl.textContent = "-";
+			alphabetPreviewEl.textContent = "-";
+			totalNamesEl.textContent = "-";
+			portionEl.textContent = "-";
+			updateRuntimeSection();
+			namesBox.textContent = "Run the first section, then generate names here.";
+		}
+	</script>
+</body>
+</html>
