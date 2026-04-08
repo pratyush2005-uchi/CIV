@@ -1,842 +1,1108 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-	<meta charset="UTF-8" />
-	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-	<title>The Nine Billion Names</title>
-	<style>
-		:root {
-			--ink: #191412;
-			--paper: #f6f2e8;
-			--accent: #b24a2f;
-			--accent-soft: #f2c8a0;
-			--mist: #d9e4cf;
-			--good: #1f6e43;
-			--bad: #a12222;
-			--card: rgba(255, 255, 255, 0.8);
-			--border: rgba(25, 20, 18, 0.14);
-			--shadow: 0 18px 45px rgba(25, 20, 18, 0.12);
-		}
+  <meta charset="UTF-8">
+  <title>Wolfram's Gambit</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-		* {
-			box-sizing: border-box;
-		}
+    body {
+      background: #e8e8f4;
+      color: #1a1a33;
+      font-family: 'Courier New', Courier, monospace;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
 
-		body {
-			margin: 0;
-			color: var(--ink);
-			font-family: "Avenir Next", "Gill Sans", "Trebuchet MS", sans-serif;
-			min-height: 100vh;
-			background:
-				radial-gradient(circle at 12% 10%, rgba(178, 74, 47, 0.18), transparent 30%),
-				radial-gradient(circle at 90% 5%, rgba(69, 103, 143, 0.16), transparent 28%),
-				linear-gradient(160deg, #f8f4ea 0%, #ece4cf 55%, #d7dfcb 100%);
-			display: flex;
-			align-items: center;
-			justify-content: center;
-			padding: 1.4rem;
-		}
+    #game-container {
+      width: 820px;
+      background: #ffffff;
+      border: 3px solid #4455cc;
+      box-shadow: 0 6px 32px rgba(30,30,100,0.18);
+      position: relative;
+      overflow: hidden;
+    }
 
-		.page {
-			width: min(980px, 100%);
-			background: linear-gradient(180deg, rgba(255, 255, 255, 0.78), rgba(255, 255, 255, 0.67));
-			border: 1px solid var(--border);
-			border-radius: 22px;
-			box-shadow: var(--shadow);
-			backdrop-filter: blur(6px);
-			overflow: hidden;
-			animation: rise 620ms ease-out both;
-		}
+    /* Rule 30 header strip */
+    #rule30-strip {
+      height: 20px;
+      background: #f0f0fa;
+      border-bottom: 2px solid #d0d0ee;
+      display: flex;
+      align-items: center;
+      padding: 0 4px;
+      gap: 2px;
+      overflow: hidden;
+    }
+    .r30-cell { width: 14px; height: 16px; flex-shrink: 0; }
 
-		@keyframes rise {
-			from {
-				opacity: 0;
-				transform: translateY(18px) scale(0.985);
-			}
-			to {
-				opacity: 1;
-				transform: translateY(0) scale(1);
-			}
-		}
+    /* Shared screen system */
+    .screen { display: none; flex-direction: column; }
+    .screen.active { display: flex; }
 
-		header {
-			padding: 2rem 1.4rem 1.1rem;
-			border-bottom: 1px solid var(--border);
-			background: linear-gradient(90deg, rgba(242, 200, 160, 0.24), rgba(217, 228, 207, 0.35));
-		}
+    /* ── TITLE SCREEN ─────────────────────────────────── */
+    #title-screen {
+      align-items: center;
+      justify-content: center;
+      min-height: 500px;
+      padding: 44px 32px;
+      text-align: center;
+      background: linear-gradient(160deg, #f4f4ff 0%, #eef0ff 100%);
+    }
+    .title-eyebrow { font-size: 12px; letter-spacing: 5px; color: #6677cc; text-transform: uppercase; margin-bottom: 16px; }
+    .title-main    { font-size: 44px; color: #2233aa; letter-spacing: 6px; text-transform: uppercase; line-height: 1.1; text-shadow: 2px 2px 0 #c0c8ff; }
+    .title-sub     { font-size: 14px; color: #444466; max-width: 430px; line-height: 1.9; margin: 20px 0 36px; }
+    .title-preview { font-size: 12px; color: #aabbdd; letter-spacing: 2px; margin-top: 28px; }
 
-		h1 {
-			margin: 0;
-			line-height: 1.05;
-			letter-spacing: 0.02em;
-			font-size: clamp(1.6rem, 3.8vw, 2.55rem);
-			font-family: "Iowan Old Style", "Times New Roman", serif;
-			font-weight: 700;
-		}
+    /* ── TUTORIAL SCREEN ──────────────────────────────── */
+    #tutorial-screen {
+      min-height: 500px;
+      padding: 28px 32px 24px;
+      background: #fafaff;
+    }
+    .tut-title {
+      font-size: 20px;
+      color: #2233aa;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      text-align: center;
+      padding-bottom: 14px;
+      border-bottom: 2px solid #d0d0ee;
+      margin-bottom: 20px;
+    }
+    .tut-section-title {
+      font-size: 13px;
+      font-weight: bold;
+      color: #2233aa;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+    .tut-body {
+      font-size: 13px;
+      color: #333355;
+      line-height: 1.8;
+      margin-bottom: 18px;
+    }
+    .tut-moves {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 20px;
+      font-size: 13px;
+    }
+    .tut-moves th {
+      background: #eeeeff;
+      color: #2233aa;
+      font-weight: bold;
+      text-align: left;
+      padding: 7px 12px;
+      border: 1px solid #d0d0ee;
+      font-size: 12px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+    .tut-moves td {
+      padding: 8px 12px;
+      border: 1px solid #e0e0f0;
+      color: #333355;
+      vertical-align: top;
+      line-height: 1.6;
+    }
+    .tut-moves tr:nth-child(even) td { background: #f5f5ff; }
+    .tut-moves .move-name { font-weight: bold; color: #2233aa; }
+    .tut-moves .move-cost { color: #cc3300; font-size: 12px; font-weight: bold; }
+    .tut-win-list {
+      list-style: none;
+      margin-bottom: 20px;
+    }
+    .tut-win-list li {
+      font-size: 13px;
+      color: #333355;
+      padding: 5px 0 5px 20px;
+      border-bottom: 1px dotted #d8d8ee;
+      line-height: 1.7;
+      position: relative;
+    }
+    .tut-win-list li::before { content: "▸"; position: absolute; left: 2px; color: #4455cc; }
+    .tut-warn-box {
+      background: #fff8e8;
+      border: 2px solid #ddaa00;
+      padding: 10px 16px;
+      font-size: 13px;
+      color: #664400;
+      line-height: 1.8;
+      margin-bottom: 22px;
+    }
+    .tut-footer { text-align: center; }
 
-		.subtitle {
-			margin-top: 0.55rem;
-			color: rgba(25, 20, 18, 0.84);
-			max-width: 73ch;
-			line-height: 1.42;
-			font-size: 0.97rem;
-		}
+    /* ── BATTLE SCREEN ────────────────────────────────── */
+    #battle-screen { min-height: 500px; }
 
-		main {
-			padding: 1.25rem;
-			display: grid;
-			gap: 1rem;
-		}
+    #stage-banner {
+      background: #f2f2fc;
+      border-bottom: 2px solid #d0d0ee;
+      padding: 8px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .s-num   { font-size: 13px; color: #2233aa; letter-spacing: 3px; text-transform: uppercase; font-weight: bold; }
+    .s-label { font-size: 13px; color: #5566aa; letter-spacing: 1px; }
 
-		.card {
-			border: 1px solid var(--border);
-			border-radius: 16px;
-			background: var(--card);
-			padding: 1rem;
-			animation: fadeIn 460ms ease-out both;
-		}
+    #battle-area { display: flex; padding: 16px 16px 0; gap: 16px; }
 
-		.card:nth-of-type(2) {
-			animation-delay: 100ms;
-		}
+    /* Player Panel */
+    #player-panel { width: 200px; flex-shrink: 0; display: flex; flex-direction: column; gap: 12px; }
+    .panel-label  { font-size: 12px; letter-spacing: 3px; color: #2233aa; text-transform: uppercase; font-weight: bold; padding-bottom: 6px; border-bottom: 2px solid #d0d0ee; }
+    .stat-row     { display: flex; flex-direction: column; gap: 5px; }
+    .stat-lbl-row { display: flex; justify-content: space-between; font-size: 14px; color: #333355; font-weight: bold; }
+    .stat-lbl-row .v { color: #111133; font-weight: bold; }
 
-		@keyframes fadeIn {
-			from {
-				opacity: 0;
-				transform: translateY(12px);
-			}
-			to {
-				opacity: 1;
-				transform: translateY(0);
-			}
-		}
+    .bar-wrap { width: 100%; height: 20px; background: #e0e0ee; border: 2px solid #bbbbdd; overflow: hidden; border-radius: 2px; }
+    .bar-fill {
+      height: 100%;
+      transition: width 0.35s ease;
+      background-image: repeating-linear-gradient(
+        90deg, rgba(255,255,255,0.25) 0, rgba(255,255,255,0.25) 4px,
+        transparent 4px, transparent 9px
+      );
+    }
+    #sanity-fill  { background-color: #8822bb; }
+    #funding-fill { background-color: #0088aa; }
+    #enemy-fill   { background-color: #cc2222; }
+    .bar-danger   { background-color: #ee0000 !important; }
+    .bar-warn     { background-color: #dd5500 !important; }
 
-		.card-title {
-			margin: 0 0 0.65rem;
-			font-family: "Iowan Old Style", "Times New Roman", serif;
-			font-size: 1.28rem;
-			letter-spacing: 0.01em;
-		}
+    .mult-box {
+      background: #eefaf2;
+      border: 2px solid #44bb66;
+      padding: 9px 10px;
+      margin-top: 2px;
+      text-align: center;
+      border-radius: 2px;
+    }
+    .mult-num     { font-size: 26px; color: #116633; font-weight: bold; line-height: 1; }
+    .mult-caption { font-size: 11px; color: #448855; letter-spacing: 2px; text-transform: uppercase; margin-top: 3px; font-weight: bold; }
 
-		.controls {
-			display: grid;
-			grid-template-columns: minmax(180px, 280px) auto;
-			gap: 0.75rem;
-			align-items: end;
-			margin-bottom: 0.55rem;
-		}
+    /* Enemy Panel */
+    #enemy-panel { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 10px; }
+    #enemy-sprite-wrap { width: 130px; height: 130px; display: flex; align-items: center; justify-content: center; }
+    #enemy-name-lbl { font-size: 15px; color: #cc1111; letter-spacing: 1px; text-align: center; font-weight: bold; }
+    #enemy-hp-row { width: 100%; max-width: 230px; }
 
-		label {
-			display: block;
-			font-size: 0.88rem;
-			margin-bottom: 0.42rem;
-			color: rgba(25, 20, 18, 0.8);
-		}
+    #syco-dialogue {
+      display: none;
+      font-size: 13px;
+      color: #886600;
+      font-style: italic;
+      text-align: center;
+      background: #fffbe0;
+      border: 2px solid #ddaa00;
+      padding: 9px 14px;
+      width: 100%;
+      max-width: 230px;
+      line-height: 1.7;
+      min-height: 48px;
+      border-radius: 2px;
+    }
 
-		input {
-			width: 100%;
-			border: 1px solid rgba(25, 20, 18, 0.25);
-			border-radius: 10px;
-			padding: 0.72rem 0.8rem;
-			background: #fffdf7;
-			color: var(--ink);
-			font-size: 1rem;
-			font-family: "Menlo", "Monaco", "Courier New", monospace;
-		}
+    /* Message Log */
+    #msg-log {
+      height: 84px;
+      overflow-y: auto;
+      background: #f5f5fc;
+      border-top: 2px solid #d0d0ee;
+      border-bottom: 2px solid #d0d0ee;
+      padding: 7px 16px;
+      margin-top: 16px;
+      font-size: 13px;
+      line-height: 1.9;
+    }
+    #msg-log::-webkit-scrollbar       { width: 6px; }
+    #msg-log::-webkit-scrollbar-track { background: #eeeef8; }
+    #msg-log::-webkit-scrollbar-thumb { background: #c0c0dd; }
+    .mp { color: #2244cc; }
+    .me { color: #cc1111; }
+    .ms { color: #116633; font-weight: bold; }
+    .mw { color: #cc5500; font-weight: bold; }
 
-		input:focus {
-			outline: 2px solid rgba(178, 74, 47, 0.35);
-			outline-offset: 1px;
-			border-color: rgba(178, 74, 47, 0.55);
-		}
+    /* Action Panel */
+    #action-panel { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 10px 16px 16px; }
+    .act-btn {
+      background: #f8f8ff;
+      border: 2px solid #c8c8ee;
+      color: #222255;
+      padding: 10px 12px;
+      font-family: 'Courier New', monospace;
+      font-size: 13px;
+      cursor: pointer;
+      text-align: left;
+      line-height: 1.5;
+      transition: background 0.08s, border-color 0.08s, color 0.08s;
+      border-radius: 2px;
+    }
+    .act-btn:hover:not(:disabled)  { background: #eeeeff; border-color: #5566cc; color: #111133; }
+    .act-btn:active:not(:disabled) { transform: translate(1px, 1px); }
+    .act-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+    .act-btn .bn { font-weight: bold; color: #2233aa; display: block; }
+    .act-btn .bs { font-size: 11px; color: #5566aa; display: block; }
+    .act-btn .bc { font-size: 11px; color: #cc4400; display: block; margin-top: 2px; font-weight: bold; }
 
-		button {
-			border: none;
-			border-radius: 999px;
-			background: linear-gradient(92deg, var(--accent), #9a3e26);
-			color: #fff;
-			font-size: 0.95rem;
-			font-weight: 650;
-			padding: 0.76rem 1.2rem;
-			cursor: pointer;
-			box-shadow: 0 8px 18px rgba(178, 74, 47, 0.28);
-			transition: transform 140ms ease, box-shadow 140ms ease, opacity 140ms ease;
-		}
+    /* Stage Transition Overlay */
+    #transition-overlay {
+      display: none;
+      position: absolute;
+      inset: 0;
+      background: #f8f8ff;
+      z-index: 20;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 32px;
+      gap: 12px;
+      border-top: 4px solid #4455cc;
+    }
+    .tr-eye  { font-size: 12px; color: #8899cc; letter-spacing: 4px; text-transform: uppercase; }
+    .tr-name { font-size: 24px; color: #2233aa; letter-spacing: 2px; margin: 4px 0; font-weight: bold; }
+    .tr-ctx  { font-size: 14px; color: #444466; max-width: 500px; line-height: 1.9; }
+    .tr-dots { font-size: 13px; color: #aabbcc; margin-top: 14px; letter-spacing: 6px; }
 
-		button:hover {
-			transform: translateY(-1px);
-			box-shadow: 0 12px 22px rgba(178, 74, 47, 0.3);
-		}
+    /* Game Over Screen */
+    #gameover-screen {
+      align-items: center;
+      justify-content: center;
+      min-height: 500px;
+      padding: 40px;
+      text-align: center;
+      gap: 18px;
+      background: #fafafa;
+    }
+    .go-title    { font-size: 44px; letter-spacing: 8px; text-transform: uppercase; }
+    .go-burnout  { color: #777777; }
+    .go-defunded { color: #cc3300; }
+    .go-text     { font-size: 15px; color: #555566; max-width: 460px; line-height: 1.9; font-style: italic; }
 
-		button:disabled {
-			opacity: 0.48;
-			cursor: not-allowed;
-			transform: none;
-			box-shadow: none;
-		}
+    /* Win Screen */
+    #win-screen {
+      align-items: center;
+      justify-content: center;
+      min-height: 500px;
+      padding: 40px;
+      text-align: center;
+      gap: 16px;
+      background: radial-gradient(ellipse at center, #fffbe0 0%, #f0f0fa 70%);
+      position: relative;
+      overflow: hidden;
+    }
+    .win-eye   { font-size: 13px; color: #997700; letter-spacing: 4px; text-transform: uppercase; font-weight: bold; }
+    .win-title { font-size: 34px; color: #aa7700; letter-spacing: 4px; font-weight: bold; animation: glow 2s ease-in-out infinite alternate; }
+    @keyframes glow {
+      from { text-shadow: 2px 2px 0 #ddaa00; }
+      to   { text-shadow: 0 0 18px #ddaa00, 2px 2px 0 #cc8800; }
+    }
+    .win-quote { font-size: 14px; color: #776600; max-width: 460px; line-height: 1.9; font-style: italic; }
+    .win-stats { font-size: 13px; color: #886600; letter-spacing: 2px; font-weight: bold; }
 
-		.rules {
-			margin-top: 0.45rem;
-			font-size: 0.86rem;
-			color: rgba(25, 20, 18, 0.7);
-			line-height: 1.5;
-		}
+    .confetti {
+      position: absolute;
+      top: -12px;
+      animation: cfall linear infinite;
+    }
+    @keyframes cfall { to { transform: translateY(520px) rotate(720deg); opacity: 0; } }
 
-		.alert {
-			margin-top: 0.7rem;
-			border-radius: 10px;
-			padding: 0.64rem 0.75rem;
-			font-size: 0.92rem;
-			border: 1px solid transparent;
-			display: none;
-		}
+    /* Shared Button */
+    .btn {
+      background: #f0f2ff;
+      border: 2px solid #4455cc;
+      color: #2233aa;
+      padding: 11px 26px;
+      font-family: 'Courier New', monospace;
+      font-size: 14px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: all 0.1s;
+      font-weight: bold;
+      border-radius: 2px;
+    }
+    .btn:hover  { background: #e0e4ff; border-color: #2233aa; color: #111166; }
+    .btn:active { transform: translate(1px, 1px); }
+    .btn-gold        { border-color: #cc9900; color: #886600; background: #fffbe8; }
+    .btn-gold:hover  { background: #fff4c0; border-color: #aa7700; color: #664400; }
 
-		.alert.show {
-			display: block;
-		}
-
-		.alert.good {
-			color: var(--good);
-			border-color: rgba(31, 110, 67, 0.25);
-			background: rgba(31, 110, 67, 0.08);
-		}
-
-		.alert.bad {
-			color: var(--bad);
-			border-color: rgba(161, 34, 34, 0.25);
-			background: rgba(161, 34, 34, 0.08);
-		}
-
-		.result-grid {
-			margin-top: 0.78rem;
-			display: grid;
-			gap: 0.58rem;
-			grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
-		}
-
-		.stat {
-			background: rgba(255, 255, 255, 0.65);
-			border: 1px solid var(--border);
-			border-radius: 12px;
-			padding: 0.72rem;
-		}
-
-		.stat-label {
-			font-size: 0.78rem;
-			text-transform: uppercase;
-			letter-spacing: 0.08em;
-			color: rgba(25, 20, 18, 0.58);
-			margin-bottom: 0.2rem;
-		}
-
-		.stat-value {
-			font-family: "Menlo", "Monaco", "Courier New", monospace;
-			font-size: 0.95rem;
-			word-break: break-word;
-		}
-
-		.stat-value.big {
-			font-size: 1.06rem;
-			font-weight: 700;
-		}
-
-		.math-details {
-			margin-top: 0.8rem;
-			border: 1px dashed rgba(25, 20, 18, 0.22);
-			border-radius: 12px;
-			background: rgba(255, 255, 255, 0.55);
-		}
-
-		.math-details summary {
-			cursor: pointer;
-			font-weight: 600;
-			padding: 0.66rem 0.78rem;
-			list-style: none;
-		}
-
-		.math-details summary::-webkit-details-marker {
-			display: none;
-		}
-
-		.math-details summary::before {
-			content: "+ ";
-			font-weight: 700;
-			color: var(--accent);
-		}
-
-		.math-details[open] summary::before {
-			content: "- ";
-		}
-
-		.math-details-content {
-			padding: 0 0.78rem 0.76rem;
-			font-size: 0.88rem;
-			line-height: 1.5;
-			color: rgba(25, 20, 18, 0.84);
-		}
-
-		.runtime-controls {
-			margin-top: 0.65rem;
-			padding: 0.72rem;
-			border-radius: 12px;
-			border: 1px solid var(--border);
-			background: rgba(255, 255, 255, 0.58);
-		}
-
-		.range-wrap {
-			display: grid;
-			grid-template-columns: 1fr auto;
-			gap: 0.7rem;
-			align-items: center;
-		}
-
-		input[type="range"] {
-			padding: 0;
-			accent-color: var(--accent);
-			cursor: pointer;
-		}
-
-		#throughputSliderValue {
-			font-family: "Menlo", "Monaco", "Courier New", monospace;
-			font-size: 0.87rem;
-			font-weight: 650;
-		}
-
-		.runtime-note {
-			margin-top: 0.48rem;
-			font-size: 0.82rem;
-			color: rgba(25, 20, 18, 0.65);
-		}
-
-		.names-controls {
-			display: flex;
-			gap: 0.7rem;
-			align-items: center;
-			flex-wrap: wrap;
-		}
-
-		.hint {
-			color: rgba(25, 20, 18, 0.68);
-			font-size: 0.87rem;
-			line-height: 1.4;
-		}
-
-		.names-box {
-			margin-top: 0.78rem;
-			border: 1px solid var(--border);
-			background: rgba(255, 255, 255, 0.64);
-			border-radius: 12px;
-			padding: 0.84rem;
-			min-height: 110px;
-		}
-
-		.names-list {
-			margin: 0;
-			padding-left: 1.2rem;
-			columns: 2;
-			column-gap: 1.2rem;
-			font-family: "Menlo", "Monaco", "Courier New", monospace;
-			font-size: 0.84rem;
-			line-height: 1.48;
-		}
-
-		.names-list li {
-			break-inside: avoid;
-			margin-bottom: 0.2rem;
-		}
-
-		.footnote {
-			margin-top: 0.65rem;
-			font-size: 0.8rem;
-			color: rgba(25, 20, 18, 0.63);
-		}
-
-		@media (max-width: 720px) {
-			.controls {
-				grid-template-columns: 1fr;
-			}
-
-			.names-list {
-				columns: 1;
-			}
-		}
-	</style>
+    /* Hit flash */
+    @keyframes battleflash {
+      0%, 100% { background-color: #ffffff; }
+      40%       { background-color: #ffe8ee; }
+    }
+    .area-hit { animation: battleflash 0.4s ease; }
+  </style>
 </head>
 <body>
-	<section class="page">
-		<header>
-			<h1>The Nine Billion Names</h1>
-			<p class="subtitle">
-				Inspired by Arthur C. Clarke's short story. Set the alphabet size, test whether the naming rules can reach nine billion names,
-				then generate a sample of 100 distinct valid names.
-			</p>
-		</header>
-
-		<main>
-			<article class="card">
-				<h2 class="card-title">1) Alphabet And Feasibility</h2>
-
-				<div class="controls">
-					<div>
-						<label for="alphabetSize">Number of characters in your alphabet</label>
-						<input id="alphabetSize" type="number" min="1" step="1" placeholder="Example: 24 or 65" />
-					</div>
-					<button id="analyzeBtn" type="button">Generate</button>
-				</div>
-
-				<p class="rules">
-					Rules used for counting names: each name has length 1 to 9, and no character may appear more than 3 times in a row.
-				</p>
-
-				<div id="statusAlert" class="alert"></div>
-
-				<div class="result-grid">
-					<div class="stat">
-						<div class="stat-label">Alphabet Mode</div>
-						<div id="alphabetMode" class="stat-value">-</div>
-					</div>
-					<div class="stat">
-						<div class="stat-label">Alphabet Preview</div>
-						<div id="alphabetPreview" class="stat-value">-</div>
-					</div>
-					<div class="stat">
-						<div class="stat-label">Total Valid Names</div>
-						<div id="totalNames" class="stat-value big">-</div>
-					</div>
-					<div class="stat">
-						<div class="stat-label">True-Name Portion</div>
-						<div id="portion" class="stat-value">-</div>
-					</div>
-				</div>
-
-				<details class="math-details">
-					<summary>Math details (click to show/hide)</summary>
-					<div class="math-details-content">
-						<p>
-							We count valid names by dynamic programming. Let f(L, r) be the number of length-L names whose last run
-							has length r (r = 1, 2, 3).
-						</p>
-						<p>
-							Transitions for alphabet size n:
-							f(L, 1) = (n - 1) x [f(L-1,1) + f(L-1,2) + f(L-1,3)],
-							f(L, 2) = f(L-1,1),
-							f(L, 3) = f(L-1,2).
-						</p>
-						<p>
-							Base case: f(1,1) = n, f(1,2)=0, f(1,3)=0. Total valid names = sum over L=1..9 of [f(L,1)+f(L,2)+f(L,3)].
-						</p>
-					</div>
-				</details>
-			</article>
-
-			<article class="card">
-				<h2 class="card-title">2) Runtime To Generate Every Name</h2>
-
-				<p class="rules">
-					Assumption: a modern computer can enumerate names with deterministic generation
-					(no randomness), in lexical-like order (a, b, c... aa, ab...).
-				</p>
-
-				<div class="runtime-controls">
-					<label for="throughputSlider">Adjust assumed throughput (names per second)</label>
-					<div class="range-wrap">
-						<input id="throughputSlider" type="range" min="1000000" max="1000000000" step="1000000" value="100000000" />
-						<div id="throughputSliderValue">100,000,000 names/second</div>
-					</div>
-					<div class="runtime-note">Range: 1 million to 1 billion names/second. Runtime updates live.</div>
-				</div>
-
-				<div class="result-grid">
-					<div class="stat">
-						<div class="stat-label">Complexity</div>
-						<div id="runtimeComplexity" class="stat-value">-</div>
-					</div>
-					<div class="stat">
-						<div class="stat-label">Assumed Throughput</div>
-						<div id="throughput" class="stat-value">-</div>
-					</div>
-					<div class="stat">
-						<div class="stat-label">Estimated Runtime (seconds)</div>
-						<div id="runtimeSeconds" class="stat-value big">-</div>
-					</div>
-					<div class="stat">
-						<div class="stat-label">Estimated Runtime (human)</div>
-						<div id="runtimeHuman" class="stat-value">-</div>
-					</div>
-				</div>
-			</article>
-
-			<article class="card">
-				<h2 class="card-title">3) Generate 100 Distinct Names</h2>
-
-				<div class="names-controls">
-					<button id="namesBtn" type="button" disabled>Generate 100 Names</button>
-					<span class="hint">This uses your current alphabet and obeys the same rule set.</span>
-				</div>
-
-				<div id="namesBox" class="names-box">
-					Run the first section, then generate names here.
-				</div>
-				<div class="footnote">Control ASCII characters are shown in escaped form such as \x00.</div>
-			</article>
-		</main>
-	</section>
-
-	<script>
-		const TARGET_NAMES = 9_000_000_000;
-		const ASCII_LIMIT = 128;
-		const RESULT_PREVIEW_LIMIT = 60;
-		const NAME_TARGET_COUNT = 100;
-		const DEFAULT_NAMES_PER_SECOND_ASSUMPTION = 100_000_000;
-
-		const analyzeBtn = document.getElementById("analyzeBtn");
-		const namesBtn = document.getElementById("namesBtn");
-		const alphabetSizeInput = document.getElementById("alphabetSize");
-		const throughputSlider = document.getElementById("throughputSlider");
-		const throughputSliderValue = document.getElementById("throughputSliderValue");
-
-		const statusAlert = document.getElementById("statusAlert");
-		const alphabetModeEl = document.getElementById("alphabetMode");
-		const alphabetPreviewEl = document.getElementById("alphabetPreview");
-		const totalNamesEl = document.getElementById("totalNames");
-		const portionEl = document.getElementById("portion");
-		const runtimeComplexityEl = document.getElementById("runtimeComplexity");
-		const throughputEl = document.getElementById("throughput");
-		const runtimeSecondsEl = document.getElementById("runtimeSeconds");
-		const runtimeHumanEl = document.getElementById("runtimeHuman");
-		const namesBox = document.getElementById("namesBox");
-
-		const appState = {
-			alphabetRaw: [],
-			alphabetDisplay: [],
-			totalValidNames: 0,
-			namesPerSecond: DEFAULT_NAMES_PER_SECOND_ASSUMPTION,
-			isFeasible: false,
-			analyzed: false
-		};
-
-		analyzeBtn.addEventListener("click", runAnalysis);
-		namesBtn.addEventListener("click", generateDistinctNames);
-		throughputSlider.addEventListener("input", onThroughputChange);
-
-		updateThroughputLabel();
-		updateRuntimeSection();
-
-		function runAnalysis() {
-			const n = parseInteger(alphabetSizeInput.value);
-
-			if (!Number.isInteger(n) || n < 1) {
-				showAlert("Please enter an integer greater than or equal to 1.", false);
-				resetComputedFields();
-				namesBtn.disabled = true;
-				appState.analyzed = false;
-				return;
-			}
-
-			if (n > 26 && n > ASCII_LIMIT) {
-				showAlert("ASCII mode supports up to 128 characters (codes 0-127). Enter 128 or less.", false);
-				resetComputedFields();
-				namesBtn.disabled = true;
-				appState.analyzed = false;
-				return;
-			}
-
-			const alphabet = buildAlphabet(n);
-			const totalValidNames = countValidNames(alphabet.raw.length);
-			const feasible = totalValidNames >= TARGET_NAMES;
-
-			appState.alphabetRaw = alphabet.raw;
-			appState.alphabetDisplay = alphabet.display;
-			appState.totalValidNames = totalValidNames;
-			appState.isFeasible = feasible;
-			appState.analyzed = true;
-
-			alphabetModeEl.textContent = alphabet.modeLabel;
-			alphabetPreviewEl.textContent = alphabetPreview(alphabet.display, RESULT_PREVIEW_LIMIT);
-			totalNamesEl.textContent = formatInteger(totalValidNames);
-
-			const ratio = TARGET_NAMES / totalValidNames;
-			const ratioPct = ratio * 100;
-			portionEl.textContent = "9,000,000,000 / " + formatInteger(totalValidNames) + " = " + formatDecimal(ratio, 10) + " (" + formatDecimal(ratioPct, 6) + "%)";
-			updateRuntimeSection();
-
-			if (feasible) {
-				showAlert("This alphabet is long enough to generate at least 9 billion valid names.", true);
-			} else {
-				showAlert("This alphabet is too short to reach 9 billion names under the rules.", false);
-			}
-
-			namesBtn.disabled = false;
-			namesBox.textContent = "Ready. Click \"Generate 100 Names\" to produce a sample.";
-		}
-
-		function generateDistinctNames() {
-			if (!appState.analyzed) {
-				namesBox.textContent = "Run analysis first.";
-				return;
-			}
-
-			const possible = appState.totalValidNames;
-			if (possible < NAME_TARGET_COUNT) {
-				namesBox.textContent = "Only " + formatInteger(possible) + " distinct names exist for this alphabet and rule set, so 100 distinct names cannot be generated.";
-				return;
-			}
-
-			const names = new Set();
-			const maxAttempts = NAME_TARGET_COUNT * 300;
-			let attempts = 0;
-
-			while (names.size < NAME_TARGET_COUNT && attempts < maxAttempts) {
-				names.add(buildRandomName(appState.alphabetRaw));
-				attempts += 1;
-			}
-
-			if (names.size < NAME_TARGET_COUNT) {
-				namesBox.textContent = "Generation stalled due to collisions. Try again; this can happen with tight name spaces.";
-				return;
-			}
-
-			const list = document.createElement("ol");
-			list.className = "names-list";
-
-			Array.from(names)
-				.sort((a, b) => a.localeCompare(b))
-				.forEach((rawName) => {
-					const li = document.createElement("li");
-					li.textContent = escapeName(rawName);
-					list.appendChild(li);
-				});
-
-			namesBox.innerHTML = "";
-			namesBox.appendChild(list);
-		}
-
-		function parseInteger(value) {
-			if (typeof value !== "string") {
-				return NaN;
-			}
-			const trimmed = value.trim();
-			if (trimmed.length === 0) {
-				return NaN;
-			}
-			return Number(trimmed);
-		}
-
-		function buildAlphabet(n) {
-			if (n <= 26) {
-				const raw = [];
-				for (let code = 65; code < 65 + n; code += 1) {
-					raw.push(String.fromCharCode(code));
-				}
-				return {
-					raw,
-					display: raw.map(escapeChar),
-					modeLabel: "English uppercase A-" + String.fromCharCode(64 + n)
-				};
-			}
-
-			const raw = [];
-			for (let code = 0; code < n; code += 1) {
-				raw.push(String.fromCharCode(code));
-			}
-
-			return {
-				raw,
-				display: raw.map(escapeChar),
-				modeLabel: "ASCII codes 0-" + String(n - 1)
-			};
-		}
-
-		function countValidNames(alphabetLength) {
-			if (alphabetLength <= 0) {
-				return 0;
-			}
-
-			let streakCounts = [0, alphabetLength, 0, 0];
-			let total = alphabetLength;
-
-			for (let len = 2; len <= 9; len += 1) {
-				const next = [0, 0, 0, 0];
-				const allPrev = streakCounts[1] + streakCounts[2] + streakCounts[3];
-
-				next[1] = allPrev * (alphabetLength - 1);
-				next[2] = streakCounts[1];
-				next[3] = streakCounts[2];
-
-				total += next[1] + next[2] + next[3];
-				streakCounts = next;
-			}
-
-			return total;
-		}
-
-		function buildRandomName(alphabet) {
-			const length = randomInt(1, 9);
-			let name = "";
-
-			let lastIndex = randomInt(0, alphabet.length - 1);
-			let runLength = 1;
-			name += alphabet[lastIndex];
-
-			for (let i = 1; i < length; i += 1) {
-				const forceDifferent = runLength >= 3;
-				let useSame = false;
-
-				if (!forceDifferent && alphabet.length > 1) {
-					useSame = Math.random() < 0.34;
-				}
-
-				let nextIndex;
-				if (useSame || alphabet.length === 1) {
-					nextIndex = lastIndex;
-				} else {
-					nextIndex = randomDifferentIndex(alphabet.length, lastIndex);
-				}
-
-				if (nextIndex === lastIndex) {
-					runLength += 1;
-				} else {
-					runLength = 1;
-				}
-
-				lastIndex = nextIndex;
-				name += alphabet[nextIndex];
-			}
-
-			return name;
-		}
-
-		function randomDifferentIndex(size, forbiddenIndex) {
-			if (size <= 1) {
-				return forbiddenIndex;
-			}
-			let candidate = randomInt(0, size - 1);
-			while (candidate === forbiddenIndex) {
-				candidate = randomInt(0, size - 1);
-			}
-			return candidate;
-		}
-
-		function randomInt(min, max) {
-			return Math.floor(Math.random() * (max - min + 1)) + min;
-		}
-
-		function escapeChar(char) {
-			const code = char.charCodeAt(0);
-
-			if (code >= 33 && code <= 126 && char !== "\\") {
-				return char;
-			}
-
-			if (char === "\\") {
-				return "\\\\";
-			}
-
-			if (code === 32) {
-				return "\\x20";
-			}
-
-			const hex = code.toString(16).toUpperCase().padStart(2, "0");
-			return "\\x" + hex;
-		}
-
-		function escapeName(rawName) {
-			let out = "";
-			for (const ch of rawName) {
-				out += escapeChar(ch);
-			}
-			return out;
-		}
-
-		function alphabetPreview(displayChars, maxChars) {
-			if (displayChars.length <= maxChars) {
-				return displayChars.join(" ");
-			}
-			return displayChars.slice(0, maxChars).join(" ") + " ... (" + displayChars.length + " total)";
-		}
-
-		function formatInteger(value) {
-			return Number(value).toLocaleString("en-US", { maximumFractionDigits: 0 });
-		}
-
-		function formatDecimal(value, digits) {
-			if (!Number.isFinite(value)) {
-				return "-";
-			}
-			return value.toLocaleString("en-US", {
-				maximumFractionDigits: digits,
-				minimumFractionDigits: 0
-			});
-		}
-
-		function formatDuration(seconds) {
-			if (!Number.isFinite(seconds)) {
-				return "-";
-			}
-
-			if (seconds < 1) {
-				return "less than 1 second";
-			}
-
-			const minute = 60;
-			const hour = 3600;
-			const day = 86400;
-			const year = 31557600;
-
-			if (seconds < minute) {
-				return formatDecimal(seconds, 2) + " seconds";
-			}
-			if (seconds < hour) {
-				return formatDecimal(seconds / minute, 2) + " minutes";
-			}
-			if (seconds < day) {
-				return formatDecimal(seconds / hour, 2) + " hours";
-			}
-			if (seconds < year) {
-				return formatDecimal(seconds / day, 2) + " days";
-			}
-
-			return formatDecimal(seconds / year, 2) + " years";
-		}
-
-		function onThroughputChange() {
-			appState.namesPerSecond = Number(throughputSlider.value);
-			updateThroughputLabel();
-			updateRuntimeSection();
-		}
-
-		function updateThroughputLabel() {
-			throughputSliderValue.textContent = formatInteger(appState.namesPerSecond) + " names/second";
-		}
-
-		function updateRuntimeSection() {
-			runtimeComplexityEl.textContent = "O(T), where T is the total number of valid names to enumerate";
-			throughputEl.textContent = formatInteger(appState.namesPerSecond) + " names/second";
-
-			if (!appState.analyzed) {
-				runtimeSecondsEl.textContent = "-";
-				runtimeHumanEl.textContent = "Run section 1 first";
-				return;
-			}
-
-			const runtimeSeconds = appState.totalValidNames / appState.namesPerSecond;
-			runtimeSecondsEl.textContent = formatDecimal(runtimeSeconds, 6);
-			runtimeHumanEl.textContent = formatDuration(runtimeSeconds);
-		}
-
-		function showAlert(message, isGood) {
-			statusAlert.textContent = message;
-			statusAlert.className = "alert show " + (isGood ? "good" : "bad");
-		}
-
-		function resetComputedFields() {
-			alphabetModeEl.textContent = "-";
-			alphabetPreviewEl.textContent = "-";
-			totalNamesEl.textContent = "-";
-			portionEl.textContent = "-";
-			updateRuntimeSection();
-			namesBox.textContent = "Run the first section, then generate names here.";
-		}
-	</script>
+<div id="game-container">
+
+  <div id="rule30-strip"></div>
+
+  <!-- ── TITLE ─────────────────────────────────────────── -->
+  <div id="title-screen" class="screen active">
+    <p class="title-eyebrow">A Turn-Based Academic Survival RPG</p>
+    <div class="title-main">Wolfram's<br>Gambit</div>
+    <p class="title-sub">
+      The universe is a cellular automaton. You are certain of it.<br>
+      Now convince the rest of academia — or lose your mind trying.
+    </p>
+    <button class="btn" onclick="showScreen('tutorial-screen')">&#9654;&nbsp; How to Play</button>
+    <p class="title-preview">SANITY &#9617;&#9617;&#9617;&#9617;&#9617;&#9617;&#9617;&#9617;&#9617;&#9617;&#9617; | FUNDING &#9617;&#9617;&#9617;&#9617;&#9617;&#9617;&#9617;&#9617;&#9617;&#9617;&#9617;</p>
+  </div>
+
+  <!-- ── TUTORIAL ───────────────────────────────────────── -->
+  <div id="tutorial-screen" class="screen">
+    <div class="tut-title">How to Play</div>
+
+    <div style="padding: 0 4px;">
+      <div class="tut-section-title">&#9670; What Is This Game?</div>
+      <p class="tut-body">
+        You are Stephen Wolfram, convinced the universe runs on cellular automata — not continuous equations.
+        Academia disagrees. Fight through 4 stages of hostile academics, survive their attacks, and
+        defend your theory long enough to shift the scientific paradigm. Sanity and Funding reset to 100 at the start of each new stage.
+      </p>
+
+      <div class="tut-section-title">&#9670; Your Moves</div>
+      <table class="tut-moves">
+        <thead>
+          <tr>
+            <th>Move</th>
+            <th>What It Does</th>
+            <th>Cost</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="move-name">Theorize</span><br><span style="font-size:11px;color:#5566aa;">Compute Automata</span></td>
+            <td>Adds <strong>+1.5x</strong> to your Evidence Multiplier. Stack this before attacking for big damage. You stay up all night running simulations.</td>
+            <td><span class="move-cost">-10 Sanity</span></td>
+          </tr>
+          <tr>
+            <td><span class="move-name">Present / Publish</span><br><span style="font-size:11px;color:#5566aa;">Attack</span></td>
+            <td>Deals <strong>20 × Evidence Multiplier</strong> damage to the enemy's Dogma HP, then resets the multiplier to 1x. Submitting papers and conferences cost money.</td>
+            <td><span class="move-cost">-15 Funding</span></td>
+          </tr>
+          <tr>
+            <td><span class="move-name">Write Grant Proposal</span><br><span style="font-size:11px;color:#5566aa;">Restore Funding</span></td>
+            <td>Restores <strong>+30 Funding</strong>. Soul-crushing paperwork, but keeps the lights on.</td>
+            <td><span class="move-cost">-15 Sanity</span></td>
+          </tr>
+          <tr>
+            <td><span class="move-name">Touch Grass</span><br><span style="font-size:11px;color:#5566aa;">Restore Sanity</span></td>
+            <td>Restores <strong>+30 Sanity</strong>. A mental health day. The trees don't have opinions about discrete mathematics.</td>
+            <td><span class="move-cost">-10 Funding</span></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="tut-section-title">&#9670; How to Win</div>
+      <ul class="tut-win-list">
+        <li>Use <strong>Theorize</strong> to build up your Evidence Multiplier, then <strong>Present / Publish</strong> to deal massive damage.</li>
+        <li>Defeat all 4 academic enemies by reducing their <strong>Dogma HP to 0</strong>.</li>
+        <li>Survive <strong>Stage 5</strong> — the Sycophantic Committee won't attack, they just grovel.</li>
+        <li>Select <strong>Accept Nobel Prize</strong> to win the game.</li>
+      </ul>
+
+      <div class="tut-warn-box">
+        &#9888;&nbsp; <strong>Watch out:</strong> If <strong>Sanity</strong> or <strong>Funding</strong> hits 0, it's game over —
+        no matter what stage you're on. Keep both topped up. Some enemies heal themselves or hit very hard.
+      </div>
+
+      <div class="tut-footer">
+        <button class="btn" onclick="startGame()">&#9654;&nbsp; Start Game</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── BATTLE ─────────────────────────────────────────── -->
+  <div id="battle-screen" class="screen">
+    <div id="stage-banner">
+      <span class="s-num">STAGE <span id="s-num">1</span> / 5</span>
+      <span class="s-label" id="s-label">Early Ideas &amp; Seeking Support</span>
+    </div>
+
+    <div id="battle-area">
+      <div id="player-panel">
+        <div class="panel-label">Dr. Wolfram</div>
+        <div class="stat-row">
+          <div class="stat-lbl-row"><span>Sanity</span><span class="v" id="sanity-v">100</span></div>
+          <div class="bar-wrap"><div class="bar-fill" id="sanity-fill" style="width:100%"></div></div>
+        </div>
+        <div class="stat-row">
+          <div class="stat-lbl-row"><span>Funding</span><span class="v" id="funding-v">100</span></div>
+          <div class="bar-wrap"><div class="bar-fill" id="funding-fill" style="width:100%"></div></div>
+        </div>
+        <div class="mult-box">
+          <div class="mult-num" id="mult-v">1.0x</div>
+          <div class="mult-caption">Evidence Multiplier</div>
+        </div>
+      </div>
+
+      <div id="enemy-panel">
+        <div id="enemy-sprite-wrap"></div>
+        <div id="enemy-name-lbl">The Apathetic Department Chair</div>
+        <div id="enemy-hp-row" class="stat-row">
+          <div class="stat-lbl-row"><span>Dogma HP</span><span class="v" id="enemy-v">50</span></div>
+          <div class="bar-wrap"><div class="bar-fill" id="enemy-fill" style="width:100%"></div></div>
+        </div>
+        <div id="syco-dialogue"></div>
+      </div>
+    </div>
+
+    <div id="msg-log"></div>
+    <div id="action-panel"></div>
+  </div>
+
+  <!-- ── GAME OVER ──────────────────────────────────────── -->
+  <div id="gameover-screen" class="screen">
+    <div class="go-title" id="go-title">BURNOUT</div>
+    <div class="go-text"  id="go-text"></div>
+    <button class="btn" onclick="resetGame()">&#8635;&nbsp; Try Again</button>
+  </div>
+
+  <!-- ── WIN ───────────────────────────────────────────── -->
+  <div id="win-screen" class="screen">
+    <div class="win-eye">Paradigm Shift Complete</div>
+    <div class="win-title">WOLFRAM WAS RIGHT</div>
+    <div class="win-quote">
+      "The universe computes itself into existence, one cellular step at a time.
+      History will remember you. The Nobel Committee is calling."
+    </div>
+    <div class="win-stats" id="win-stats"></div>
+    <button class="btn btn-gold" onclick="resetGame()">&#8635;&nbsp; Simulate Again</button>
+  </div>
+
+  <!-- ── STAGE TRANSITION OVERLAY ──────────────────────── -->
+  <div id="transition-overlay">
+    <div class="tr-eye"  id="tr-eye"></div>
+    <div class="tr-name" id="tr-name"></div>
+    <div class="tr-ctx"  id="tr-ctx"></div>
+    <div class="tr-dots">. &nbsp;. &nbsp;. &nbsp;. &nbsp;.</div>
+  </div>
+
+</div>
+
+<script>
+/* ================================================================
+   DATA
+   ================================================================ */
+var STAGES = [
+  {
+    num: 1, label: "Early Ideas & Seeking Support",
+    name: "The Apathetic Department Chair",
+    maxHp: 50, color: "#5577aa", spriteKey: "chair",
+    context: "You are trying to explain that the universe is a cellular automaton, not a continuous equation. The Chair just wants you to publish something normal so the department ranking goes up.",
+    moves: [
+      { name: "Scoff",
+        quote: '"This sounds like science fiction."',
+        fn: function(p,e){ p.sanity -= 15; return {msg:"The Chair scoffs. -15 Sanity.", healed:false}; } },
+      { name: "Deny Lab Space",
+        quote: '"We need this room for string theorists."',
+        fn: function(p,e){ p.funding -= 20; return {msg:"Lab space denied. -20 Funding.", healed:false}; } },
+      { name: "Suggest 'Safer' Topic",
+        quote: '"Just do standard quantum mechanics."',
+        fn: function(p,e){ p.evidenceMult = Math.max(1.0, p.evidenceMult - 0.5);
+          return {msg:"Your confidence shaken. Evidence Multiplier -0.5x.", healed:false}; } }
+    ]
+  },
+  {
+    num: 2, label: "First Draft & Looking for Assistants",
+    name: "The Cynical Grad Students",
+    maxHp: 80, color: "#337755", spriteKey: "grad",
+    context: "You need a team to write the code for your simulations, but the grad students are terrified that working on your fringe theory will ruin their careers.",
+    moves: [
+      { name: "Ghost Meeting",
+        quote: "Nobody shows up.",
+        fn: function(p,e){ p.sanity -= 20; return {msg:"Nobody showed up. -20 Sanity.", healed:false}; } },
+      { name: "Demand First Authorship",
+        quote: '"I\'ll code it, but my name goes first."',
+        fn: function(p,e){ p.funding -= 25; return {msg:"Authorship politics. -25 Funding.", healed:false}; } },
+      { name: "Find a Math Error",
+        quote: '"Wait, rule 30 doesn\'t do that..."',
+        fn: function(p,e){ p.evidenceMult = 1.0;
+          return {msg:"A math error found! Evidence Multiplier reset to 1x!", healed:false}; } }
+    ]
+  },
+  {
+    num: 3, label: "Finished Paper & Publishing",
+    name: "Reviewer #2",
+    maxHp: 100, color: "#993333", spriteKey: "reviewer",
+    context: "You submitted to Nature. Reviewer #1 liked it. Reviewer #2 has decided to make it their life's mission to destroy you.",
+    moves: [
+      { name: "Reject Without Reading",
+        quote: '"Fundamentally flawed premise."',
+        fn: function(p,e){ p.sanity -= 15; return {msg:"Rejected without reading. -15 Sanity!", healed:false}; } },
+      { name: "Demand 10 More Citations",
+        quote: '"The author fails to cite my unrelated work."',
+        fn: function(p,e){ p.funding -= 15; return {msg:"More citations required. -15 Funding.", healed:false}; } },
+      { name: "Move the Goalposts",
+        quote: "Reviewer #2 heals themselves.",
+        fn: function(p,e){ e.hp = Math.min(e.maxHp, e.hp + 20);
+          return {msg:"Goalposts moved! Reviewer #2 recovers 20 Dogma!", healed:true}; } }
+    ]
+  },
+  {
+    num: 4, label: "Defense in Front of the Scientific Community",
+    name: "The Tenured Traditionalist",
+    maxHp: 120, color: "#884422", spriteKey: "boss",
+    context: "You are on stage at the biggest physics conference of the decade. The establishment tries to publicly dismantle your theory to protect the status quo.",
+    moves: [
+      { name: "Cite 40-Year-Old Paradigm",
+        quote: '"As we\'ve known since the 1980s..."',
+        fn: function(p,e){ e.hp = Math.min(e.maxHp, e.hp + 25);
+          return {msg:"Ancient authority invoked! Traditionalist recovers 25 Dogma!", healed:true}; } },
+      { name: "Public Humiliation",
+        quote: '"Are you seriously suggesting continuous math is a lie?"',
+        fn: function(p,e){ p.sanity -= 30; return {msg:"Public humiliation. -40 Sanity!", healed:false}; } },
+      { name: "Threaten Tenure Track",
+        quote: '"This will not look good for your career."',
+        fn: function(p,e){ p.funding -= 30; return {msg:"Grant committees take notice. -40 Funding!", healed:false}; } }
+    ]
+  },
+  {
+    num: 5, label: "The Paradigm Shift",
+    name: "The Sycophantic Committee",
+    maxHp: null, color: "#997722", spriteKey: "committee",
+    context: "You defeated the Traditionalist. The paradigm has shifted. Everyone acts like they were your best friend all along.",
+    moves: [],
+    dialogues: [
+      '"My dear boy! I always knew you were a genius!"',
+      '"We were just testing your rigor, of course!"',
+      '"Let\'s co-author a follow-up book!"',
+      '"Your Rule 30 insight was always obvious to us."',
+      '"I cited your pre-print in 2015, you know."',
+      '"We should name the new institute after you!"',
+      '"Truly visionary. We were right there with you."'
+    ]
+  }
+];
+
+/* ----------------------------------------------------------------
+   Pixel sprite patterns: 12x12, '1' = colored, '0' = transparent
+   ---------------------------------------------------------------- */
+var SPRITES = {
+  chair: [
+    "000111111000","001111111100","001100001100","001111111100",
+    "001111111100","000011110000","000111111000","001111111100",
+    "001100001100","000100001000","000110011000","000110011000"
+  ],
+  grad: [
+    "001111111100","011111111110","011001001110","011111111110",
+    "001111111100","000111111000","011111111110","011011011110",
+    "011000000110","011000000110","011011011110","001100001100"
+  ],
+  reviewer: [
+    "000011110000","000111111000","000110011000","000111111000",
+    "000011110000","001111111100","011111111110","011011011110",
+    "011111111110","001111111100","001100001100","011000000110"
+  ],
+  boss: [
+    "011111111110","111111111111","110011001011","111111111111",
+    "011111111110","001111111100","011111111110","011011011110",
+    "011111111110","011011011110","011000000110","011000000110"
+  ],
+  committee: [
+    "110011001100","111111111111","110110110111","111111111111",
+    "110011001100","001111111100","011111111110","011111111110",
+    "011011011110","011111111110","011000000110","011000000110"
+  ]
+};
+
+/* ================================================================
+   PLAYER MOVES
+   ================================================================ */
+var MOVES_NORMAL = [
+  {
+    name: "Theorize", sub: "Compute Automata", cost: "-10 Sanity",
+    exec: function(G) {
+      G.player.sanity -= 10;
+      G.player.evidenceMult = Math.round((G.player.evidenceMult + 1.5) * 10) / 10;
+      log("You run cellular automata simulations all night. Evidence Multiplier -> " + G.player.evidenceMult + "x", "mp");
+      return true;
+    }
+  },
+  {
+    name: "Present / Publish", sub: "Attack with Evidence", cost: "-15 Funding",
+    exec: function(G) {
+      if (G.player.funding < 15) { log("Not enough Funding to publish!", "mw"); return false; }
+      var mult = G.player.evidenceMult;
+      var dmg  = Math.round(20 * mult);
+      G.player.funding -= 15;
+      G.enemy.hp -= dmg;
+      G.player.evidenceMult = 1.0;
+      log("Published with " + mult + "x evidence! " + STAGES[G.stageIdx].name + " takes " + dmg + " damage. Multiplier reset to 1x.", "mp");
+      return true;
+    }
+  },
+  {
+    name: "Write Grant Proposal", sub: "Restore Funding", cost: "-15 Sanity",
+    exec: function(G) {
+      G.player.sanity -= 15;
+      G.player.funding = Math.min(100, G.player.funding + 30);
+      log("Weekend lost to grant paperwork. +30 Funding. -15 Sanity.", "mp");
+      return true;
+    }
+  },
+  {
+    name: "Touch Grass", sub: "Restore Sanity", cost: "-10 Funding",
+    exec: function(G) {
+      G.player.funding -= 10;
+      G.player.sanity = Math.min(100, G.player.sanity + 30);
+      log("You go outside. The trees don't care about cellular automata. +30 Sanity.", "mp");
+      return true;
+    }
+  }
+];
+
+var MOVES_STAGE5 = [
+  {
+    name: "Accept Nobel Prize", sub: "Claim your victory", cost: "Glory",
+    exec: function(G) {
+      G.dead = true;
+      G.playerTurn = false;
+      log("You stride to the podium. The audience rises. You've done it.", "ms");
+      renderButtons();
+      setTimeout(doWin, 900);
+      return true;
+    }
+  },
+  {
+    name: "Smirk", sub: "Does nothing. Feels incredible.", cost: "--",
+    exec: function(G) {
+      var lines = [
+        "You allow yourself a small, knowing smile.",
+        "You say nothing. The silence speaks volumes.",
+        "You smirk. It feels incredible.",
+        "You glance at the committee. They flinch first."
+      ];
+      log(lines[Math.floor(Math.random() * lines.length)], "mp");
+      return true;
+    }
+  },
+  {
+    name: "Ignore Emails", sub: "Restore Sanity to 100", cost: "--",
+    exec: function(G) {
+      G.player.sanity = 100;
+      log("You archive 847 unread emails without reading them. Sanity fully restored.", "mp");
+      return true;
+    }
+  }
+];
+
+/* ================================================================
+   GAME STATE
+   ================================================================ */
+var G = {};
+
+function newGame() {
+  G = {
+    player:     { sanity: 100, funding: 100, evidenceMult: 1.0 },
+    stageIdx:   0,
+    enemy:      { hp: STAGES[0].maxHp, maxHp: STAGES[0].maxHp },
+    playerTurn: false,
+    dead:       false,
+    dlgIdx:     0
+  };
+  lastSpriteStage = -1;
+}
+
+/* ================================================================
+   CORE LOOP
+   ================================================================ */
+function handleMove(idx) {
+  if (!G.playerTurn || G.dead) return;
+  var moves = G.stageIdx === 4 ? MOVES_STAGE5 : MOVES_NORMAL;
+  var move  = moves[idx];
+  if (!move) return;
+
+  var acted = move.exec(G);
+  if (!acted) return;
+
+  clamp();
+  refreshUI();
+
+  if (G.dead) return;
+  if (checkDeath()) return;
+
+  if (G.stageIdx === 4) {
+    sycophantLine();
+    return;
+  }
+
+  if (G.enemy.hp <= 0) {
+    G.enemy.hp = 0;
+    refreshUI();
+    G.playerTurn = false;
+    renderButtons();
+    log(STAGES[G.stageIdx].name + "'s Dogma collapses! Stage clear!", "ms");
+    setTimeout(advanceStage, 1600);
+    return;
+  }
+
+  G.playerTurn = false;
+  renderButtons();
+  setTimeout(enemyTurn, 850);
+}
+
+function enemyTurn() {
+  if (G.dead) return;
+  var stg  = STAGES[G.stageIdx];
+  var move = stg.moves[Math.floor(Math.random() * stg.moves.length)];
+
+  var area = document.getElementById("battle-area");
+  area.classList.add("area-hit");
+  setTimeout(function(){ area.classList.remove("area-hit"); }, 400);
+
+  var res = move.fn(G.player, G.enemy);
+  clamp();
+  log(stg.name + " — " + move.name + ": " + move.quote + "  " + (res.healed ? "[HEAL] " : "") + res.msg, "me");
+  refreshUI();
+
+  if (checkDeath()) return;
+  G.playerTurn = true;
+  renderButtons();
+}
+
+function sycophantLine() {
+  var stg  = STAGES[4];
+  var line = stg.dialogues[G.dlgIdx % stg.dialogues.length];
+  G.dlgIdx++;
+  document.getElementById("syco-dialogue").textContent = line;
+  log("The Committee: " + line, "me");
+  G.playerTurn = true;
+  renderButtons();
+}
+
+function advanceStage() {
+  G.stageIdx++;
+  if (G.stageIdx >= STAGES.length) { doWin(); return; }
+
+  var stg = STAGES[G.stageIdx];
+  G.enemy = {
+    hp:    stg.maxHp === null ? Infinity : stg.maxHp,
+    maxHp: stg.maxHp === null ? Infinity : stg.maxHp
+  };
+
+  // Reset player stats between fight stages, but not entering stage 5
+  if (G.stageIdx < 4) {
+    G.player.sanity  = 100;
+    G.player.funding = 100;
+  }
+  G.player.evidenceMult = 1.0;
+  G.playerTurn = false;
+
+  if (G.stageIdx === 4) { stopAllMusic(); }
+
+  showTransition(stg, function() {
+    if (G.stageIdx === 4) {
+      document.getElementById("enemy-hp-row").style.display  = "none";
+      document.getElementById("syco-dialogue").style.display = "block";
+      document.getElementById("syco-dialogue").textContent   = '"Welcome, dear colleague!"';
+      document.getElementById("enemy-name-lbl").style.color  = "#886600";
+    } else {
+      document.getElementById("enemy-hp-row").style.display  = "";
+      document.getElementById("syco-dialogue").style.display = "none";
+      document.getElementById("enemy-name-lbl").style.color  = "";
+    }
+    log("--- Stage " + stg.num + ": " + stg.name + " ---", "ms");
+    G.playerTurn = true;
+    refreshUI();
+  });
+}
+
+function checkDeath() {
+  if (G.player.sanity <= 0) {
+    G.dead = true; G.playerTurn = false;
+    renderButtons();
+    setTimeout(function(){ doGameOver("burnout"); }, 600);
+    return true;
+  }
+  if (G.player.funding <= 0) {
+    G.dead = true; G.playerTurn = false;
+    renderButtons();
+    setTimeout(function(){ doGameOver("defunded"); }, 600);
+    return true;
+  }
+  return false;
+}
+
+function clamp() {
+  var p = G.player;
+  p.sanity       = Math.min(100, p.sanity);
+  p.funding      = Math.min(100, p.funding);
+  p.evidenceMult = Math.max(1.0, Math.round(p.evidenceMult * 10) / 10);
+}
+
+/* ================================================================
+   SCREENS
+   ================================================================ */
+function showScreen(id) {
+  var screens = document.querySelectorAll(".screen");
+  for (var i = 0; i < screens.length; i++) screens[i].classList.remove("active");
+  document.getElementById(id).classList.add("active");
+}
+
+function showTransition(stg, cb) {
+  var ov = document.getElementById("transition-overlay");
+  document.getElementById("tr-eye").textContent  = "Stage " + stg.num + "  --  " + stg.label;
+  document.getElementById("tr-name").textContent = stg.name;
+  document.getElementById("tr-ctx").textContent  = stg.context;
+  ov.style.display = "flex";
+  setTimeout(function(){ ov.style.display = "none"; cb(); }, 2800);
+}
+
+function startGame() {
+  newGame();
+  showScreen("battle-screen");
+  document.getElementById("syco-dialogue").style.display  = "none";
+  document.getElementById("enemy-hp-row").style.display   = "";
+  document.getElementById("enemy-name-lbl").style.color   = "";
+  document.getElementById("msg-log").innerHTML = "";
+  document.body.style.filter = "none";
+  var confetti = document.querySelectorAll(".confetti");
+  for (var i = 0; i < confetti.length; i++) confetti[i].remove();
+
+  log("The battle for the discrete universe begins. Good luck.", "ms");
+  showTransition(STAGES[0], function() {
+    G.playerTurn = true;
+    refreshUI();
+    playFightMusic();
+  });
+}
+
+function doGameOver(type) {
+  stopAllMusic();
+  showScreen("gameover-screen");
+  var title = document.getElementById("go-title");
+  var text  = document.getElementById("go-text");
+  if (type === "burnout") {
+    title.textContent = "BURNOUT";
+    title.className   = "go-title go-burnout";
+    document.body.style.filter = "grayscale(0.85)";
+    text.textContent  = "You abandoned the discrete universe theory, took a job in management consulting, and now optimize ad-click revenues for a tech monopoly.";
+  } else {
+    title.textContent = "DEFUNDED";
+    title.className   = "go-title go-defunded";
+    document.body.style.filter = "none";
+    text.textContent  = "Your lab was shut down. You now post 100-page theoretical manifestos on Reddit that get downvoted to oblivion.";
+  }
+}
+
+function doWin() {
+  playVictoryMusic();
+  showScreen("win-screen");
+  document.body.style.filter = "none";
+  document.getElementById("win-stats").textContent =
+    "Final Stats — Sanity: " + Math.round(G.player.sanity) + "  |  Funding: " + Math.round(G.player.funding);
+  spawnConfetti();
+}
+
+function resetGame() {
+  stopAllMusic();
+  document.body.style.filter = "none";
+  var confetti = document.querySelectorAll(".confetti");
+  for (var i = 0; i < confetti.length; i++) confetti[i].remove();
+  showScreen("title-screen");
+}
+
+/* ================================================================
+   UI REFRESH
+   ================================================================ */
+function refreshUI() {
+  var p   = G.player;
+  var stg = STAGES[G.stageIdx];
+
+  document.getElementById("sanity-v").textContent  = Math.max(0, Math.round(p.sanity));
+  document.getElementById("funding-v").textContent = Math.max(0, Math.round(p.funding));
+  document.getElementById("mult-v").textContent    = p.evidenceMult.toFixed(1) + "x";
+
+  var sf = document.getElementById("sanity-fill");
+  sf.style.width = Math.max(0, p.sanity) + "%";
+  sf.className   = "bar-fill" + (p.sanity  <= 20 ? " bar-danger" : p.sanity  <= 40 ? " bar-warn" : "");
+  sf.id = "sanity-fill";
+
+  var ff = document.getElementById("funding-fill");
+  ff.style.width = Math.max(0, p.funding) + "%";
+  ff.className   = "bar-fill" + (p.funding <= 20 ? " bar-danger" : p.funding <= 40 ? " bar-warn" : "");
+  ff.id = "funding-fill";
+
+  var mv = document.getElementById("mult-v");
+  mv.style.color = p.evidenceMult >= 5 ? "#bb7700" : p.evidenceMult >= 3 ? "#447700" : "#116633";
+
+  document.getElementById("s-num").textContent          = stg.num;
+  document.getElementById("s-label").textContent        = stg.label;
+  document.getElementById("enemy-name-lbl").textContent = stg.name;
+
+  if (G.stageIdx < 4) {
+    var hp  = Math.max(0, G.enemy.hp);
+    var pct = (hp / G.enemy.maxHp) * 100;
+    document.getElementById("enemy-v").textContent    = hp;
+    document.getElementById("enemy-fill").style.width = pct + "%";
+  }
+
+  renderSprite(stg);
+  renderButtons();
+}
+
+function renderButtons() {
+  var panel = document.getElementById("action-panel");
+  panel.innerHTML = "";
+  var moves = G.stageIdx === 4 ? MOVES_STAGE5 : MOVES_NORMAL;
+  for (var i = 0; i < moves.length; i++) {
+    (function(m, idx) {
+      var btn = document.createElement("button");
+      btn.className = "act-btn";
+      btn.innerHTML = '<span class="bn">' + m.name + '</span>' +
+                      '<span class="bs">' + m.sub  + '</span>' +
+                      '<span class="bc">' + m.cost + '</span>';
+      btn.disabled  = !G.playerTurn || G.dead;
+      btn.onclick   = function(){ handleMove(idx); };
+      panel.appendChild(btn);
+    })(moves[i], i);
+  }
+}
+
+/* ================================================================
+   SPRITE RENDERER  (CSS pixel blocks, 12x12)
+   ================================================================ */
+var lastSpriteStage = -1;
+
+/* ================================================================
+   AUDIO
+   ================================================================ */
+var fightAudio   = new Audio("fight_music.mp3");
+var victoryAudio = new Audio("victory_music.mp3");
+fightAudio.loop   = true;
+victoryAudio.loop = false;
+
+function playFightMusic() {
+  victoryAudio.pause();
+  victoryAudio.currentTime = 0;
+  fightAudio.currentTime = 0;
+  fightAudio.play().catch(function(){});
+}
+
+function playVictoryMusic() {
+  fightAudio.pause();
+  fightAudio.currentTime = 0;
+  victoryAudio.currentTime = 0;
+  victoryAudio.play().catch(function(){});
+}
+
+function stopAllMusic() {
+  fightAudio.pause();
+  fightAudio.currentTime = 0;
+  victoryAudio.pause();
+  victoryAudio.currentTime = 0;
+}
+
+function renderSprite(stg) {
+  if (G.stageIdx === lastSpriteStage) return;
+  lastSpriteStage = G.stageIdx;
+
+  var wrap    = document.getElementById("enemy-sprite-wrap");
+  var pattern = SPRITES[stg.spriteKey];
+  var CELL    = 10;
+  var base    = stg.color;
+  var light   = shiftColor(base, 55);
+  var dark    = shiftColor(base, -40);
+
+  wrap.innerHTML = "";
+  var grid = document.createElement("div");
+  grid.style.cssText = "display:inline-grid;grid-template-columns:repeat(12," + CELL + "px);image-rendering:pixelated;";
+
+  for (var ri = 0; ri < pattern.length; ri++) {
+    var row = pattern[ri];
+    for (var ci = 0; ci < row.length; ci++) {
+      var px = document.createElement("div");
+      px.style.width = px.style.height = CELL + "px";
+      if (row[ci] === "1") {
+        px.style.background = ri < 4 ? light : ri > 8 ? dark : base;
+      }
+      grid.appendChild(px);
+    }
+  }
+  wrap.appendChild(grid);
+}
+
+function shiftColor(hex, amt) {
+  var r = parseInt(hex.slice(1,3), 16);
+  var g = parseInt(hex.slice(3,5), 16);
+  var b = parseInt(hex.slice(5,7), 16);
+  function c(v) { return Math.min(255, Math.max(0, v + amt)).toString(16).padStart(2, "0"); }
+  return "#" + c(r) + c(g) + c(b);
+}
+
+/* ================================================================
+   MESSAGE LOG
+   ================================================================ */
+function log(text, cls) {
+  cls = cls || "ms";
+  var el  = document.getElementById("msg-log");
+  var div = document.createElement("div");
+  div.className   = cls;
+  div.textContent = text;
+  el.appendChild(div);
+  el.scrollTop = el.scrollHeight;
+  while (el.children.length > 40) el.removeChild(el.firstChild);
+}
+
+/* ================================================================
+   CONFETTI
+   ================================================================ */
+function spawnConfetti() {
+  var win    = document.getElementById("win-screen");
+  var colors = ["#ffcc00","#ff8800","#00cc88","#3388ff","#ff3388","#66cc00","#cc00ff"];
+  for (var i = 0; i < 48; i++) {
+    var el = document.createElement("div");
+    el.className = "confetti";
+    var sz = 7 + Math.floor(Math.random() * 9);
+    el.style.left              = Math.floor(Math.random() * 100) + "%";
+    el.style.background        = colors[i % colors.length];
+    el.style.width             = sz + "px";
+    el.style.height            = sz + "px";
+    el.style.animationDuration = (1.4 + Math.random() * 2).toFixed(2) + "s";
+    el.style.animationDelay    = (Math.random() * 1.5).toFixed(2) + "s";
+    win.appendChild(el);
+  }
+}
+
+/* ================================================================
+   RULE 30 HEADER  (cellular automaton decoration)
+   ================================================================ */
+(function() {
+  var W    = 57;
+  var RULE = 30;
+  function next(l, c, r) { return (RULE >> (l * 4 + c * 2 + r)) & 1; }
+
+  var row = [];
+  for (var i = 0; i < W; i++) row.push(0);
+  row[Math.floor(W / 2)] = 1;
+
+  for (var gen = 0; gen < 10; gen++) {
+    var nr = [];
+    for (var i = 0; i < W; i++) {
+      nr.push(next(row[(i - 1 + W) % W], row[i], row[(i + 1) % W]));
+    }
+    row = nr;
+  }
+
+  var strip = document.getElementById("rule30-strip");
+  for (var i = 0; i < row.length; i++) {
+    var d = document.createElement("div");
+    d.className = "r30-cell";
+    d.style.background = row[i] ? "#3355cc" : "#d8d8f4";
+    strip.appendChild(d);
+  }
+})();
+</script>
 </body>
 </html>
