@@ -1,1385 +1,869 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>AI-dolphe Quetelet — Social Physics Evaluator</title>
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,700&family=IM+Fell+English:ital@0;1&display=swap" rel="stylesheet"/>
-  <style>
-    :root {
-      --parchment: #f5e9d0;
-      --parchment-mid: #eddcb5;
-      --parchment-dark: #e0c98a;
-      --ink: #1c0e06;
-      --sepia: #8b6914;
-      --sepia-mid: #6b4c08;
-      --sepia-dark: #4a3200;
-      --wax: #8b1a1a;
-      --wax-light: #c43030;
-      --border: #7a5c18;
-      --page-bg: #0e0603;
-    }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>1968 Chorded Keyset Emulator — Douglas Engelbart</title>
+<link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --amber: #ffb000;
+    --amber-dim: #7a5200;
+    --amber-glow: rgba(255, 176, 0, 0.35);
+    --green: #33ff00;
+    --bg: #0a0800;
+    --scanline: rgba(0,0,0,0.18);
+  }
 
-    body {
-      background-color: var(--page-bg);
-      background-image:
-        radial-gradient(ellipse at 20% 20%, rgba(90,50,10,0.25) 0%, transparent 50%),
-        radial-gradient(ellipse at 80% 80%, rgba(90,50,10,0.15) 0%, transparent 50%),
-        repeating-linear-gradient(0deg, transparent, transparent 80px, rgba(255,255,255,0.01) 80px, rgba(255,255,255,0.01) 81px),
-        repeating-linear-gradient(90deg, transparent, transparent 80px, rgba(255,255,255,0.01) 80px, rgba(255,255,255,0.01) 81px);
-      min-height: 100vh;
-      padding: 20px 16px 60px;
-      font-family: 'IM Fell English', Georgia, serif;
-      color: var(--ink);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
+  html, body {
+    height: 100%;
+    background: var(--bg);
+    color: var(--amber);
+    font-family: 'VT323', 'Courier New', monospace;
+    font-size: 18px;
+    overflow-x: hidden;
+  }
 
-    .container { max-width: 780px; width: 100%; }
+  /* CRT scanlines overlay */
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    background: repeating-linear-gradient(
+      to bottom,
+      transparent 0px,
+      transparent 3px,
+      var(--scanline) 3px,
+      var(--scanline) 4px
+    );
+    z-index: 1000;
+  }
 
-    /* ─── Header ─── */
-    .masthead {
-      text-align: center;
-      padding: 30px 0 24px;
-      color: var(--parchment);
-    }
-    .masthead-rule {
-      display: flex; align-items: center; justify-content: center; gap: 12px;
-      color: var(--sepia); font-size: 1.3em; letter-spacing: 4px; margin: 8px 0;
-    }
-    .masthead-rule::before,
-    .masthead-rule::after { content: ''; flex: 1; height: 1px; background: var(--sepia); opacity: 0.5; }
-    .masthead h1 {
-      font-family: 'Playfair Display', serif;
-      font-size: clamp(2em, 6vw, 3.2em);
-      font-weight: 700;
-      line-height: 1.15;
-      text-shadow: 0 2px 12px rgba(0,0,0,0.9), 0 0 40px rgba(139,105,20,0.3);
-      letter-spacing: 1px;
-    }
-    .masthead h1 em { font-style: italic; color: var(--parchment-dark); }
-    .masthead .byline {
-      font-style: italic;
-      font-size: 0.9em;
-      color: var(--parchment-mid);
-      opacity: 0.75;
-      margin-top: 6px;
-      letter-spacing: 1px;
-    }
+  /* CRT vignette */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    background: radial-gradient(ellipse at center, transparent 60%, rgba(0,0,0,0.7) 100%);
+    z-index: 999;
+  }
 
-    /* ─── Card ─── */
-    .card {
-      background: var(--parchment);
-      background-image:
-        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='400' height='400' filter='url(%23n)' opacity='0.06'/%3E%3C/svg%3E"),
-        linear-gradient(160deg, #f7ecda 0%, #f0e2c0 50%, #ecdab5 100%);
-      border: 1px solid var(--border);
-      box-shadow:
-        0 0 0 4px rgba(28,14,6,0.9),
-        0 0 0 5px var(--sepia-mid),
-        0 0 0 7px rgba(28,14,6,0.7),
-        0 8px 40px rgba(0,0,0,0.8),
-        inset 0 0 80px rgba(139,105,20,0.07);
-      padding: 44px 48px 48px;
-      position: relative;
-      margin-bottom: 20px;
-    }
+  .container {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 24px 20px 40px;
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+  }
 
-    /* Corner ornaments */
-    .card::before { content: '✦'; position: absolute; top: 12px; left: 14px; color: var(--sepia); font-size: 1.1em; }
-    .card::after  { content: '✦'; position: absolute; top: 12px; right: 14px; color: var(--sepia); font-size: 1.1em; }
-    .card .corner-bl { position: absolute; bottom: 12px; left: 14px; color: var(--sepia); font-size: 1.1em; }
-    .card .corner-br { position: absolute; bottom: 12px; right: 14px; color: var(--sepia); font-size: 1.1em; }
+  .header {
+    text-align: center;
+    border-bottom: 1px solid var(--amber-dim);
+    padding-bottom: 16px;
+  }
 
-    /* ─── Section titles ─── */
-    .section-head {
-      text-align: center; margin: 0 0 22px;
-      padding: 8px 0;
-      border-top: 2px solid var(--sepia-mid);
-      border-bottom: 2px solid var(--sepia-mid);
-      position: relative;
-    }
-    .section-head h2 {
-      font-family: 'Playfair Display', serif;
-      font-size: 1.35em; font-style: italic;
-      color: var(--sepia-dark); letter-spacing: 1px;
-    }
+  .header h1 {
+    font-size: 2.2rem;
+    text-shadow: 0 0 12px var(--amber), 0 0 24px var(--amber-glow);
+    letter-spacing: 2px;
+  }
 
-    .divider {
-      text-align: center; color: var(--sepia); font-size: 1em;
-      letter-spacing: 10px; margin: 22px 0; opacity: 0.6;
-    }
+  .header p {
+    color: var(--amber-dim);
+    font-size: 1rem;
+    margin-top: 4px;
+    letter-spacing: 1px;
+  }
 
-    /* ─── Epigraph ─── */
-    .epigraph {
-      font-style: italic; font-size: 0.96em;
-      color: var(--sepia-mid); line-height: 1.85;
-      text-align: center; margin-bottom: 8px;
-    }
-    .epigraph-source {
-      text-align: center; font-size: 0.8em; color: var(--sepia); margin-bottom: 24px;
-    }
+  /* ── Zone A: Keyset ─────────────────────────────── */
+  .zone {
+    border: 1px solid var(--amber-dim);
+    padding: 18px 20px;
+    position: relative;
+  }
 
-    /* ─── Form ─── */
-    .form-group { margin-bottom: 20px; }
-    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+  .zone-label {
+    position: absolute;
+    top: -11px;
+    left: 14px;
+    background: var(--bg);
+    padding: 0 6px;
+    font-size: 0.85rem;
+    color: var(--amber-dim);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
 
-    label {
-      display: block;
-      font-family: 'Playfair Display', serif;
-      font-weight: 600; font-size: 0.92em;
-      color: var(--sepia-dark); margin-bottom: 7px;
-    }
-    label .note { font-weight: 400; font-style: italic; color: var(--sepia); font-size: 0.85em; }
+  .keys-row {
+    display: flex;
+    gap: 14px;
+    justify-content: center;
+    align-items: flex-end;
+  }
 
-    input[type="number"], select {
-      width: 100%; padding: 10px 13px;
-      background: rgba(255,255,255,0.6);
-      border: 1px solid var(--sepia);
-      border-bottom: 2px solid var(--sepia-mid);
-      color: var(--ink);
-      font-family: 'IM Fell English', serif; font-size: 1em;
-      outline: none;
-      transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
-      appearance: none; -webkit-appearance: none;
-    }
-    input[type="number"]:focus, select:focus {
-      background: rgba(255,255,255,0.85);
-      border-color: var(--sepia-dark);
-      box-shadow: 0 2px 8px rgba(74,50,0,0.18);
-    }
-    select {
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%238b6914' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
-      background-repeat: no-repeat; background-position: right 12px center;
-      padding-right: 32px;
-    }
+  .key-block {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+  }
 
-    /* Age slider */
-    .slider-wrap { display: flex; align-items: center; gap: 12px; }
-    input[type="range"] {
-      -webkit-appearance: none; flex: 1; height: 5px;
-      background: linear-gradient(to right, var(--sepia-dark), var(--sepia));
-      border: 1px solid var(--sepia-mid); border-radius: 3px; outline: none;
-    }
-    input[type="range"]::-webkit-slider-thumb {
-      -webkit-appearance: none; width: 22px; height: 22px;
-      background: radial-gradient(circle at 40% 35%, #f5e9d0, #c8a44a);
-      border: 2px solid var(--sepia-dark); border-radius: 50%;
-      cursor: pointer; box-shadow: 0 2px 6px rgba(0,0,0,0.35);
-    }
-    .age-badge {
-      min-width: 52px; text-align: center;
-      background: rgba(255,255,255,0.5);
-      border: 1px solid var(--sepia);
-      padding: 4px 8px;
-      font-family: 'Playfair Display', serif;
-      font-size: 1.5em; font-weight: 700; color: var(--sepia-dark);
-      line-height: 1;
-    }
-    .age-label { font-size: 0.75em; display: block; color: var(--sepia); }
+  .key-label {
+    font-size: 0.85rem;
+    color: var(--amber-dim);
+    letter-spacing: 1px;
+  }
 
-    /* Submit */
-    .submit-btn {
-      display: block; width: 100%; margin-top: 28px;
-      padding: 17px 20px;
-      background: linear-gradient(to bottom, #7a5c18, #4a3200);
-      color: var(--parchment);
-      border: 2px solid var(--ink);
-      font-family: 'Playfair Display', serif;
-      font-size: 1.1em; font-style: italic; letter-spacing: 2.5px;
-      text-transform: uppercase; cursor: pointer;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.5), 0 0 0 1px var(--sepia-mid), inset 0 1px 0 rgba(255,255,255,0.08);
-      transition: all 0.2s;
-    }
-    .submit-btn:hover {
-      background: linear-gradient(to bottom, #8b6914, #5c3e00);
-      transform: translateY(-1px);
-      box-shadow: 0 6px 16px rgba(0,0,0,0.6);
-    }
+  .key-rect {
+    width: 80px;
+    height: 110px;
+    border: 2px solid var(--amber-dim);
+    background: transparent;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    transition: background 0.05s, border-color 0.05s, box-shadow 0.05s;
+    cursor: default;
+    user-select: none;
+  }
 
-    /* ─── Loading ─── */
-    #loading-screen { display: none; }
-    .loading-inner { text-align: center; padding: 50px 40px 60px; }
+  /* Spacebar is wider */
+  .key-rect.space-key {
+    width: 180px;
+    height: 60px;
+  }
 
-    .clockface {
-      width: 140px; height: 140px; margin: 0 auto 32px;
-      position: relative;
-    }
-    .clockface svg { width: 100%; height: 100%; filter: drop-shadow(0 0 10px rgba(139,105,20,0.4)); }
-    .clock-hour   { transform-origin: 70px 70px; animation: rotate-hour 12s linear infinite; }
-    .clock-minute { transform-origin: 70px 70px; animation: rotate-minute 2s linear infinite; }
-    .clock-second { transform-origin: 70px 70px; animation: rotate-second 0.5s linear infinite; }
-    @keyframes rotate-hour   { to { transform: rotate(360deg); } }
-    @keyframes rotate-minute { to { transform: rotate(360deg); } }
-    @keyframes rotate-second { to { transform: rotate(360deg); } }
-    .gear-outer { animation: gear-spin 4s linear infinite; transform-origin: 50% 50%; }
-    .gear-inner { animation: gear-spin 4s linear infinite reverse; transform-origin: 50% 50%; }
-    @keyframes gear-spin { to { transform: rotate(360deg); } }
+  .key-rect .key-name {
+    font-size: 1.6rem;
+    text-shadow: 0 0 6px var(--amber-dim);
+  }
 
-    .loading-msg {
-      font-family: 'Playfair Display', serif;
-      font-style: italic; font-size: 1.1em;
-      color: var(--sepia-mid); line-height: 1.7;
-      min-height: 2.2em;
-      transition: opacity 0.4s;
-    }
-    .loading-dots { display: inline-block; animation: dots 1.2s steps(3,end) infinite; }
-    @keyframes dots { 0%{content:'.'} 33%{content:'..'} 66%{content:'...'} }
-    .loading-sub {
-      font-size: 0.8em; color: var(--sepia); font-style: italic; margin-top: 10px; opacity: 0.7;
-    }
+  .key-rect .finger-name {
+    font-size: 0.75rem;
+    color: var(--amber-dim);
+  }
 
-    /* ─── Results ─── */
-    #results-screen { display: none; }
+  .key-rect.active {
+    background: rgba(255,176,0,0.18);
+    border-color: var(--amber);
+    box-shadow: 0 0 16px var(--amber), inset 0 0 12px rgba(255,176,0,0.2);
+  }
 
-    .result-title {
-      font-family: 'Playfair Display', serif;
-      font-size: 1.8em; font-style: italic;
-      color: var(--sepia-dark); text-align: center;
-      margin-bottom: 4px;
-    }
-    .result-sub {
-      text-align: center; font-style: italic; font-size: 0.85em;
-      color: var(--sepia); margin-bottom: 20px;
-    }
+  .key-rect.active .key-name,
+  .key-rect.active .finger-name {
+    text-shadow: 0 0 10px var(--amber), 0 0 20px var(--amber);
+    color: var(--amber);
+  }
 
-    /* Gauge */
-    .gauge-wrap { text-align: center; margin: 24px 0 0; }
-    .gauge-label {
-      font-family: 'Playfair Display', serif;
-      font-size: 0.8em; letter-spacing: 3px;
-      text-transform: uppercase; color: var(--sepia-mid);
-      margin-bottom: 10px;
-    }
-    .gauge-svg { max-width: 320px; width: 100%; display: block; margin: 0 auto; }
-    .gauge-score-html {
-      font-family: 'Playfair Display', serif;
-      font-size: 3em; font-weight: 700; color: var(--ink);
-      line-height: 1; margin-top: 10px;
-    }
-    .gauge-verdict-html {
-      font-family: 'IM Fell English', serif;
-      font-style: italic; font-size: 1.05em; color: var(--sepia-dark);
-      margin-top: 4px; margin-bottom: 28px;
-    }
+  /* Hint: keys needed for the next challenge character */
+  .key-rect.hint {
+    background: rgba(51,255,0,0.07);
+    border-color: var(--green);
+    box-shadow: 0 0 14px rgba(51,255,0,0.5), inset 0 0 10px rgba(51,255,0,0.12);
+    animation: hint-pulse 1.2s ease-in-out infinite;
+  }
 
-    /* Score breakdown */
-    .breakdown-grid {
-      display: grid; grid-template-columns: 1fr 1fr;
-      gap: 12px; margin: 0 0 20px;
-    }
-    .breakdown-item {
-      background: rgba(255,255,255,0.45);
-      border: 1px solid var(--border);
-      padding: 12px 14px;
-    }
-    .breakdown-item-label {
-      font-family: 'Playfair Display', serif;
-      font-size: 0.72em; text-transform: uppercase;
-      letter-spacing: 1.5px; color: var(--sepia-dark);
-      margin-bottom: 7px;
-    }
-    .bar-track {
-      width: 100%; height: 7px;
-      background: var(--parchment-dark);
-      border: 1px solid var(--sepia);
-      margin-bottom: 5px;
-    }
-    .bar-fill {
-      height: 100%;
-      background: linear-gradient(to right, var(--sepia-mid), var(--wax));
-      transition: width 1.2s cubic-bezier(.4,0,.2,1);
-    }
-    .breakdown-item-note {
-      font-size: 0.8em; font-style: italic; color: var(--sepia-mid);
-    }
+  .key-rect.hint .key-name,
+  .key-rect.hint .finger-name {
+    color: var(--green);
+    text-shadow: 0 0 10px var(--green);
+  }
 
-    /* Verdict */
-    .verdict-box {
-      background: rgba(255,255,255,0.35);
-      border: 1px solid var(--border);
-      border-left: 4px solid var(--sepia-mid);
-      padding: 26px 28px; margin-top: 24px;
-    }
-    .verdict-box-title {
-      font-family: 'Playfair Display', serif;
-      font-size: 1.2em; font-style: italic;
-      color: var(--sepia-dark); text-align: center;
-      margin-bottom: 16px;
-    }
-    .flag-block {
-      background: rgba(139,26,26,0.07);
-      border: 1px solid var(--wax);
-      border-left: 3px solid var(--wax-light);
-      padding: 9px 14px; margin: 10px 0;
-      font-style: italic; font-size: 0.9em; color: var(--wax);
-    }
-    .verdict-body { line-height: 1.85; font-size: 1.02em; }
-    .verdict-body p { margin-bottom: 14px; }
-    .verdict-body p:last-child { margin-bottom: 0; }
+  /* active always wins over hint visually */
+  .key-rect.active.hint {
+    background: rgba(255,176,0,0.28);
+    border-color: var(--amber);
+    box-shadow: 0 0 20px var(--amber), inset 0 0 14px rgba(255,176,0,0.3);
+    animation: none;
+  }
 
-    .signature {
-      margin-top: 22px;
-      padding-top: 14px;
-      border-top: 1px solid var(--sepia);
-      text-align: right;
-      font-family: 'Playfair Display', serif;
-      font-style: italic; font-size: 0.92em;
-      color: var(--sepia-dark); line-height: 1.6;
-    }
+  .key-rect.active.hint .key-name,
+  .key-rect.active.hint .finger-name {
+    color: var(--amber);
+    text-shadow: 0 0 10px var(--amber), 0 0 20px var(--amber);
+  }
 
-    /* Reset */
-    .reset-btn {
-      display: block; width: 100%;
-      padding: 13px; margin-top: 16px;
-      background: transparent;
-      border: 2px solid var(--sepia-mid);
-      color: var(--sepia-mid);
-      font-family: 'Playfair Display', serif;
-      font-size: 0.95em; font-style: italic;
-      cursor: pointer; letter-spacing: 1px;
-      transition: all 0.2s;
-    }
-    .reset-btn:hover { background: var(--sepia-dark); color: var(--parchment); border-color: var(--sepia-dark); }
+  @keyframes hint-pulse {
+    0%, 100% { box-shadow: 0 0 10px rgba(51,255,0,0.4), inset 0 0 8px rgba(51,255,0,0.1); }
+    50%       { box-shadow: 0 0 22px rgba(51,255,0,0.75), inset 0 0 14px rgba(51,255,0,0.2); }
+  }
 
-    /* Footer */
-    .colophon {
-      text-align: center; color: rgba(245,233,208,0.35);
-      font-size: 0.78em; font-style: italic;
-      padding: 24px 0 10px; line-height: 1.8;
-    }
+  .register-display {
+    margin-top: 18px;
+    text-align: center;
+    font-size: 1.3rem;
+    letter-spacing: 3px;
+    text-shadow: 0 0 8px var(--amber-glow);
+  }
 
-    /* Validation error */
-    .field-error { border-color: var(--wax) !important; }
-    .error-msg { font-size: 0.8em; color: var(--wax); font-style: italic; margin-top: 5px; display: none; }
-    .error-msg.show { display: block; }
+  .register-display .bits span {
+    display: inline-block;
+    width: 1.2em;
+    text-align: center;
+    transition: color 0.05s, text-shadow 0.05s;
+  }
 
-    @media (max-width: 580px) {
-      .card { padding: 28px 22px 32px; }
-      .form-row { grid-template-columns: 1fr; gap: 0; }
-      .breakdown-grid { grid-template-columns: 1fr; }
-    }
+  .register-display .bits span.on {
+    color: var(--amber);
+    text-shadow: 0 0 10px var(--amber);
+  }
 
-    /* ─── Ledger open button ─── */
-    .ledger-open-btn {
-      display: block; width: 100%; margin-top: 12px;
-      padding: 12px 16px;
-      background: transparent;
-      border: 1px dashed var(--sepia);
-      color: var(--sepia);
-      font-family: 'Playfair Display', serif;
-      font-size: 0.9em; font-style: italic; letter-spacing: 1px;
-      cursor: pointer; transition: all 0.2s;
-    }
-    .ledger-open-btn:hover { background: rgba(139,105,20,0.1); color: var(--sepia-dark); border-color: var(--sepia-mid); }
+  .register-display .bits span.off {
+    color: var(--amber-dim);
+  }
 
-    /* ─── Save to Ledger section ─── */
-    .save-section {
-      margin-top: 28px; padding-top: 22px;
-      border-top: 2px solid var(--sepia);
-    }
-    .save-section-title {
-      font-family: 'Playfair Display', serif;
-      font-size: 1.1em; font-style: italic;
-      color: var(--sepia-dark); text-align: center; margin-bottom: 10px;
-    }
-    .save-instruction {
-      text-align: center; font-style: italic;
-      font-size: 0.85em; color: var(--sepia); margin-bottom: 14px; line-height: 1.6;
-    }
-    .save-name-row { display: flex; gap: 8px; margin-bottom: 10px; }
-    .save-name-input {
-      flex: 1; padding: 10px 13px;
-      background: rgba(255,255,255,0.6);
-      border: 1px solid var(--sepia); border-bottom: 2px solid var(--sepia-mid);
-      color: var(--ink); font-family: 'IM Fell English', serif; font-size: 1em; outline: none;
-    }
-    .save-name-input:focus { background: rgba(255,255,255,0.85); border-color: var(--sepia-dark); }
-    .pseudo-btn {
-      padding: 10px 12px; white-space: nowrap;
-      background: rgba(255,255,255,0.4);
-      border: 1px solid var(--sepia); border-bottom: 2px solid var(--sepia-mid);
-      color: var(--sepia-mid); font-family: 'IM Fell English', serif;
-      font-size: 0.85em; font-style: italic; cursor: pointer; transition: all 0.2s;
-    }
-    .pseudo-btn:hover { background: rgba(139,105,20,0.1); color: var(--sepia-dark); }
-    .save-btn {
-      display: block; width: 100%; padding: 14px;
-      background: linear-gradient(to bottom, #5c3e00, #3a2500);
-      color: var(--parchment-mid);
-      border: 1px solid var(--ink);
-      font-family: 'Playfair Display', serif;
-      font-size: 1em; font-style: italic; letter-spacing: 1.5px;
-      cursor: pointer; transition: all 0.2s;
-      box-shadow: 0 3px 8px rgba(0,0,0,0.4);
-    }
-    .save-btn:hover:not(:disabled) { background: linear-gradient(to bottom, #7a5c18, #4a3200); }
-    .save-btn:disabled { opacity: 0.5; cursor: default; }
-    .save-confirm {
-      display: none; margin-top: 10px; padding: 12px 16px;
-      background: rgba(26,107,16,0.08); border: 1px solid #2a6b10;
-      font-style: italic; color: #1a4a10; font-size: 0.9em; line-height: 1.65; text-align: center;
-    }
-    .save-confirm.show { display: block; }
-    .save-err {
-      display: none; margin-top: 10px; padding: 10px 14px;
-      background: rgba(139,26,26,0.07); border: 1px solid var(--wax);
-      font-style: italic; color: var(--wax); font-size: 0.85em; text-align: center;
-    }
-    .save-err.show { display: block; }
+  /* ── Zone B: Terminal ───────────────────────────── */
+  .terminal-box {
+    min-height: 140px;
+    background: rgba(255,176,0,0.03);
+    padding: 14px;
+    font-size: 1.4rem;
+    line-height: 1.7;
+    word-break: break-all;
+    letter-spacing: 1px;
+    text-shadow: 0 0 6px var(--amber-glow);
+    position: relative;
+  }
 
-    /* ─── Ledger screen ─── */
-    #ledger-screen { display: none; }
-    .ledger-back-btn {
-      display: block; width: 100%; padding: 13px; margin-top: 16px;
-      background: transparent; border: 2px solid var(--sepia-mid);
-      color: var(--sepia-mid); font-family: 'Playfair Display', serif;
-      font-size: 0.95em; font-style: italic; cursor: pointer;
-      letter-spacing: 1px; transition: all 0.2s;
-    }
-    .ledger-back-btn:hover { background: var(--sepia-dark); color: var(--parchment); border-color: var(--sepia-dark); }
-    .ledger-count {
-      text-align: center; font-family: 'Playfair Display', serif;
-      font-style: italic; font-size: 0.82em; color: var(--sepia);
-      letter-spacing: 1px; margin-bottom: 20px;
-    }
-    .ledger-empty {
-      text-align: center; padding: 44px 20px;
-      font-style: italic; color: var(--sepia); font-size: 1em; line-height: 2.1;
-    }
-    .dossier-card {
-      background: rgba(255,255,255,0.35);
-      border: 1px solid var(--border);
-      border-left: 4px solid var(--sepia-mid);
-      padding: 18px 20px; margin-bottom: 16px;
-    }
-    .dossier-header {
-      display: flex; align-items: baseline; flex-wrap: wrap; gap: 8px 14px;
-      padding-bottom: 10px; margin-bottom: 10px;
-      border-bottom: 1px solid var(--parchment-dark);
-    }
-    .dossier-num {
-      font-family: 'Playfair Display', serif; font-size: 0.7em;
-      letter-spacing: 2px; text-transform: uppercase; color: var(--sepia);
-    }
-    .dossier-name {
-      font-family: 'Playfair Display', serif; font-size: 1.1em;
-      font-weight: 700; color: var(--sepia-dark); flex: 1;
-    }
-    .dossier-date { font-style: italic; font-size: 0.8em; color: var(--sepia); }
-    .dossier-score-row {
-      display: flex; align-items: center; gap: 14px;
-      margin-bottom: 10px; flex-wrap: wrap;
-    }
-    .dossier-badge {
-      padding: 3px 12px; font-family: 'Playfair Display', serif;
-      font-weight: 700; font-size: 1.15em; border: 1px solid currentColor;
-    }
-    .dossier-sublabel { font-style: italic; font-size: 0.85em; color: var(--sepia-mid); }
-    .dossier-meta { font-size: 0.8em; color: var(--sepia); font-style: italic; }
-    .dossier-mini-bars { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 8px; }
-    .dossier-mini-wrap { display: flex; flex-direction: column; align-items: center; gap: 3px; }
-    .dossier-mini-label { font-size: 0.6em; text-transform: uppercase; letter-spacing: 0.8px; color: var(--sepia); }
-    .dossier-mini-track { width: 64px; height: 5px; background: var(--parchment-dark); border: 1px solid var(--sepia); }
-    .dossier-mini-fill { height: 100%; background: linear-gradient(to right, var(--sepia-mid), var(--wax)); }
-    .dossier-flags { margin-bottom: 8px; }
-    .dossier-flag-tag {
-      display: inline-block; margin: 2px 3px;
-      padding: 1px 8px; font-size: 0.72em; font-style: italic;
-      background: rgba(139,26,26,0.07); border: 1px solid var(--wax); color: var(--wax);
-    }
-    .dossier-excerpt {
-      font-style: italic; font-size: 0.88em; color: var(--ink);
-      line-height: 1.7; padding-top: 8px; margin-top: 6px;
-      border-top: 1px solid var(--parchment-dark);
-    }
-  </style>
+  .cursor {
+    display: inline-block;
+    width: 0.7em;
+    height: 1.2em;
+    background: var(--amber);
+    vertical-align: text-bottom;
+    animation: blink 1s step-start infinite;
+    box-shadow: 0 0 8px var(--amber);
+  }
+
+  @keyframes blink {
+    0%, 100% { opacity: 1; }
+    50%       { opacity: 0; }
+  }
+
+  .terminal-controls {
+    margin-top: 10px;
+    display: flex;
+    gap: 14px;
+    justify-content: flex-end;
+  }
+
+  .retro-btn {
+    background: transparent;
+    border: 1px solid var(--amber-dim);
+    color: var(--amber-dim);
+    font-family: inherit;
+    font-size: 0.95rem;
+    padding: 4px 14px;
+    cursor: pointer;
+    letter-spacing: 1px;
+    transition: all 0.1s;
+  }
+
+  .retro-btn:hover {
+    border-color: var(--amber);
+    color: var(--amber);
+    text-shadow: 0 0 8px var(--amber);
+    box-shadow: 0 0 8px var(--amber-glow);
+  }
+
+  /* ── Zone C: Training Module ────────────────────── */
+  .challenge-quote {
+    position: relative;
+    font-size: 1.25rem;
+    line-height: 1.8;
+    letter-spacing: 1px;
+    margin-bottom: 18px;
+  }
+
+  .challenge-quote .char {
+    position: relative;
+    display: inline;
+  }
+
+  .challenge-quote .char.matched {
+    color: var(--amber);
+    text-shadow: 0 0 8px var(--amber);
+  }
+
+  .challenge-quote .char.pending {
+    color: var(--amber-dim);
+  }
+
+  .challenge-quote .char.cursor-pos {
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  .challenge-quote .char.error {
+    color: #ff4444;
+    text-shadow: 0 0 8px #ff4444;
+  }
+
+  .progress-bar-wrap {
+    height: 6px;
+    background: var(--amber-dim);
+    border: 1px solid var(--amber-dim);
+    margin-bottom: 14px;
+  }
+
+  .progress-bar-fill {
+    height: 100%;
+    background: var(--amber);
+    box-shadow: 0 0 8px var(--amber);
+    transition: width 0.2s;
+  }
+
+  .cheat-toggle {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 14px;
+    color: var(--amber-dim);
+    font-size: 0.95rem;
+    letter-spacing: 1px;
+  }
+
+  .cheat-toggle input[type="checkbox"] {
+    accent-color: var(--amber);
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+  }
+
+  .cheat-sheet {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+    gap: 6px;
+    font-size: 0.9rem;
+  }
+
+  .cheat-entry {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    border: 1px solid var(--amber-dim);
+    padding: 4px 2px;
+    gap: 2px;
+    transition: border-color 0.1s, background 0.1s;
+  }
+
+  .cheat-entry.highlight {
+    border-color: var(--amber);
+    background: rgba(255,176,0,0.1);
+    box-shadow: 0 0 8px var(--amber-glow);
+  }
+
+  .cheat-entry .char-glyph {
+    font-size: 1.2rem;
+    color: var(--amber);
+    text-shadow: 0 0 6px var(--amber-glow);
+  }
+
+  .cheat-entry .chord-bits {
+    font-size: 0.7rem;
+    color: var(--amber-dim);
+    letter-spacing: 1px;
+  }
+
+  .cheat-entry .chord-keys {
+    font-size: 0.7rem;
+    color: var(--amber-dim);
+  }
+
+  .status-msg {
+    text-align: center;
+    font-size: 1.1rem;
+    letter-spacing: 2px;
+    min-height: 1.5em;
+    text-shadow: 0 0 8px var(--amber-glow);
+  }
+
+  .status-msg.success {
+    color: var(--green);
+    text-shadow: 0 0 12px var(--green);
+    animation: flash 0.4s ease;
+  }
+
+  @keyframes flash {
+    0%   { opacity: 0; }
+    50%  { opacity: 1; }
+    100% { opacity: 1; }
+  }
+
+  /* Sound toggle */
+  .sound-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--amber-dim);
+    font-size: 0.95rem;
+    letter-spacing: 1px;
+    justify-content: flex-end;
+  }
+
+  .sound-row input[type="checkbox"] {
+    accent-color: var(--amber);
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+  }
+
+  /* Commit flash overlay */
+  #commit-flash {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    background: rgba(255,176,0,0.05);
+    z-index: 998;
+    opacity: 0;
+    transition: opacity 0.08s;
+  }
+
+  #commit-flash.flash {
+    opacity: 1;
+  }
+</style>
 </head>
 <body>
+<div id="commit-flash"></div>
 <div class="container">
 
-  <!-- ══════════════ MASTHEAD ══════════════ -->
-  <div class="masthead">
-    <div class="masthead-rule">⚙ ❧ ⚙</div>
-    <h1>AI-dolphe <em>Quetelet</em></h1>
-    <p class="byline">
-      Royal Observatory of Brussels &nbsp;·&nbsp; Est. Anno Domini 1835<br>
-      <em>Social Physics Evaluator &amp; Moral Character Ledger</em>
-    </p>
-    <div class="masthead-rule">⚙ ❧ ⚙</div>
+  <!-- Header -->
+  <div class="header">
+    <h1>CHORDED KEYSET EMULATOR</h1>
+    <p>DOUGLAS ENGELBART · SRI · 1968 · "THE MOTHER OF ALL DEMOS"</p>
   </div>
 
-  <!-- ══════════════ FORM SCREEN ══════════════ -->
-  <div id="form-screen">
-    <div class="card">
-      <span class="corner-bl">✦</span><span class="corner-br">✦</span>
+  <!-- Zone A: Visual Keyset -->
+  <div class="zone">
+    <div class="zone-label">ZONE A — 5-KEY CHORD INPUT</div>
 
-      <p class="epigraph">
-        "The greater the number of individuals observed, the more do individual peculiarities,<br>
-        whether physical or moral, become effaced, and allow the general facts<br>
-        by which society exists and is preserved to predominate."
-      </p>
-      <p class="epigraph-source">— Lambert Adolphe Jacques Quetelet, <em>Sur l'Homme et le Développement de ses Facultés</em>, 1835</p>
-
-      <div class="section-head"><h2>The Demographic Ledger</h2></div>
-      <p style="text-align:center; font-style:italic; font-size:0.88em; color:var(--sepia); margin-bottom:26px;">
-        Complete the following register with absolute precision.<br>The mathematics require truth; they will not tolerate flattery.
-      </p>
-
-      <form id="ledger-form" novalidate>
-
-        <!-- I. Age -->
-        <div class="form-group">
-          <label>I. &nbsp;Age
-            <span class="note">(in completed years of terrestrial existence)</span>
-          </label>
-          <div class="slider-wrap">
-            <span style="font-size:0.8em;color:var(--sepia);">0</span>
-            <input type="range" id="age" min="0" max="80" value="30">
-            <span style="font-size:0.8em;color:var(--sepia);">80</span>
-            <div class="age-badge">
-              <span id="age-num">30</span>
-              <span class="age-label">yrs</span>
-            </div>
-          </div>
+    <div class="keys-row">
+      <!-- A=bit0, S=bit1, D=bit2, F=bit3 -->
+      <div class="key-block">
+        <div class="key-rect" id="key-a">
+          <span class="key-name">A</span>
+          <span class="finger-name">PINKY</span>
         </div>
-
-        <!-- II. Sex -->
-        <div class="form-group">
-          <label>II. &nbsp;Sex
-            <span class="note">(as determined by natural generation, per parish register)</span>
-          </label>
-          <select id="sex">
-            <option value="">— Select —</option>
-            <option value="male">Male</option>
-            <option value="female">Female</option>
-          </select>
-          <p class="error-msg" id="err-sex">The sex of the subject must be declared.</p>
+        <div class="key-label">BIT 0 · ×1</div>
+      </div>
+      <div class="key-block">
+        <div class="key-rect" id="key-s">
+          <span class="key-name">S</span>
+          <span class="finger-name">RING</span>
         </div>
-
-        <!-- III & IV. Height & Weight -->
-        <div class="form-row">
-          <div class="form-group">
-            <label>III. &nbsp;Height <span class="note">(cm)</span></label>
-            <input type="number" id="height" min="100" max="250" placeholder="e.g. 170">
-            <p class="error-msg" id="err-height">A valid stature is required.</p>
-          </div>
-          <div class="form-group">
-            <label>IV. &nbsp;Weight <span class="note">(kg)</span></label>
-            <input type="number" id="weight" min="20" max="400" placeholder="e.g. 70">
-            <p class="error-msg" id="err-weight">A valid mass is required.</p>
-          </div>
+        <div class="key-label">BIT 1 · ×2</div>
+      </div>
+      <div class="key-block">
+        <div class="key-rect" id="key-d">
+          <span class="key-name">D</span>
+          <span class="finger-name">MIDDLE</span>
         </div>
-
-        <!-- V. Birth Month -->
-        <div class="form-group">
-          <label>V. &nbsp;Month of Birth
-            <span class="note">(as recorded in the civil registry of natality)</span>
-          </label>
-          <select id="birth-month">
-            <option value="">— Select Month —</option>
-            <option value="1">January</option><option value="2">February</option>
-            <option value="3">March</option><option value="4">April</option>
-            <option value="5">May</option><option value="6">June</option>
-            <option value="7">July</option><option value="8">August</option>
-            <option value="9">September</option><option value="10">October</option>
-            <option value="11">November</option><option value="12">December</option>
-          </select>
-          <p class="error-msg" id="err-month">The month of birth must be declared.</p>
+        <div class="key-label">BIT 2 · ×4</div>
+      </div>
+      <div class="key-block">
+        <div class="key-rect" id="key-f">
+          <span class="key-name">F</span>
+          <span class="finger-name">INDEX</span>
         </div>
-
-        <!-- VI & VII. Time of Birth / Season -->
-        <div class="form-row">
-          <div class="form-group">
-            <label>VI. &nbsp;Time of Birth
-              <span class="note">(per the midwife's record)</span>
-            </label>
-            <select id="birth-time">
-              <option value="">— Select —</option>
-              <option value="night">Night &nbsp;(statistical norm)</option>
-              <option value="day">Day &nbsp;(already suspect)</option>
-            </select>
-            <p class="error-msg" id="err-time">Time of birth is required.</p>
-          </div>
-          <div class="form-group">
-            <label>VII. &nbsp;Current Season
-              <span class="note">(of this inquiry)</span>
-            </label>
-            <select id="season">
-              <option value="">— Select —</option>
-              <option value="winter">Winter</option>
-              <option value="spring">Spring</option>
-              <option value="summer">Summer</option>
-              <option value="autumn">Autumn</option>
-            </select>
-            <p class="error-msg" id="err-season">The current season must be declared.</p>
-          </div>
-        </div>
-
-        <!-- VIII. Marital Status -->
-        <div class="form-group">
-          <label>VIII. &nbsp;Marital Status
-            <span class="note">(your formal contract with civilised society)</span>
-          </label>
-          <select id="marital">
-            <option value="">— Select —</option>
-            <option value="single">Single — unanchored, unaccountable</option>
-            <option value="proper">Married — proper age differential (statistically optimal)</option>
-            <option value="large">Married — large age gap (irregular arrangement)</option>
-          </select>
-          <p class="error-msg" id="err-marital">Marital status must be declared.</p>
-        </div>
-
-        <div class="divider">· &nbsp; · &nbsp; · &nbsp; · &nbsp; ·</div>
-
-        <button type="submit" class="submit-btn">
-          ⚖ &nbsp; Submit to the Calculus of Social Physics &nbsp; ⚖
-        </button>
-        <button type="button" class="ledger-open-btn" onclick="showLedger('form')">
-          📜 &nbsp; Consult the Public Ledger of Recorded Subjects
-        </button>
-      </form>
-    </div>
-  </div>
-
-  <!-- ══════════════ LOADING SCREEN ══════════════ -->
-  <div id="loading-screen">
-    <div class="card">
-      <span class="corner-bl">✦</span><span class="corner-br">✦</span>
-      <div class="loading-inner">
-
-        <!-- Victorian Pocket Watch / Clock Face -->
-        <div class="clockface">
-          <svg viewBox="0 0 140 140" xmlns="http://www.w3.org/2000/svg">
-            <!-- Outer bezel -->
-            <circle cx="70" cy="70" r="67" fill="none" stroke="#5c3e00" stroke-width="3"/>
-            <circle cx="70" cy="70" r="63" fill="none" stroke="#8b6914" stroke-width="1" stroke-dasharray="2 4"/>
-            <!-- Face -->
-            <circle cx="70" cy="70" r="60" fill="#f0e4c0" fill-opacity="0.95"/>
-            <circle cx="70" cy="70" r="58" fill="none" stroke="#c8a030" stroke-width="0.5"/>
-            <!-- Hour ticks -->
-            <g stroke="#5c3e00" stroke-width="2" stroke-linecap="round">
-              <line x1="70" y1="14" x2="70" y2="22"/>
-              <line x1="70" y1="118" x2="70" y2="126"/>
-              <line x1="14" y1="70" x2="22" y2="70"/>
-              <line x1="118" y1="70" x2="126" y2="70"/>
-              <line x1="28.6" y1="28.6" x2="34.2" y2="34.2"/>
-              <line x1="105.8" y1="28.6" x2="100.2" y2="34.2"/>
-              <line x1="28.6" y1="111.4" x2="34.2" y2="105.8"/>
-              <line x1="105.8" y1="111.4" x2="100.2" y2="105.8"/>
-            </g>
-            <!-- Minute ticks -->
-            <g stroke="#8b6914" stroke-width="1" stroke-linecap="round" opacity="0.5">
-              <line x1="70" y1="12" x2="70" y2="17" transform="rotate(30 70 70)"/>
-              <line x1="70" y1="12" x2="70" y2="17" transform="rotate(60 70 70)"/>
-              <line x1="70" y1="12" x2="70" y2="17" transform="rotate(120 70 70)"/>
-              <line x1="70" y1="12" x2="70" y2="17" transform="rotate(150 70 70)"/>
-              <line x1="70" y1="12" x2="70" y2="17" transform="rotate(210 70 70)"/>
-              <line x1="70" y1="12" x2="70" y2="17" transform="rotate(240 70 70)"/>
-              <line x1="70" y1="12" x2="70" y2="17" transform="rotate(300 70 70)"/>
-              <line x1="70" y1="12" x2="70" y2="17" transform="rotate(330 70 70)"/>
-            </g>
-            <!-- Roman numerals hint (XII, III, VI, IX) -->
-            <text x="70" y="30" fill="#5c3e00" font-size="9" font-family="Georgia,serif" text-anchor="middle">XII</text>
-            <text x="110" y="73" fill="#5c3e00" font-size="9" font-family="Georgia,serif" text-anchor="middle">III</text>
-            <text x="70" y="113" fill="#5c3e00" font-size="9" font-family="Georgia,serif" text-anchor="middle">VI</text>
-            <text x="30" y="73" fill="#5c3e00" font-size="9" font-family="Georgia,serif" text-anchor="middle">IX</text>
-            <!-- Hour hand -->
-            <g class="clock-hour">
-              <line x1="70" y1="70" x2="70" y2="38" stroke="#2c1810" stroke-width="3.5" stroke-linecap="round"/>
-            </g>
-            <!-- Minute hand -->
-            <g class="clock-minute">
-              <line x1="70" y1="70" x2="70" y2="22" stroke="#2c1810" stroke-width="2.5" stroke-linecap="round"/>
-            </g>
-            <!-- Second hand -->
-            <g class="clock-second">
-              <line x1="70" y1="78" x2="70" y2="18" stroke="#8b1a1a" stroke-width="1.5" stroke-linecap="round"/>
-            </g>
-            <!-- Center jewel -->
-            <circle cx="70" cy="70" r="5" fill="#5c3e00"/>
-            <circle cx="70" cy="70" r="3" fill="#f5e9d0"/>
-            <circle cx="70" cy="70" r="1.5" fill="#8b6914"/>
-          </svg>
-        </div>
-
-        <p class="loading-msg" id="loading-msg">
-          Consulting the statistical tables of Brussels<span class="loading-dots">...</span>
-        </p>
-        <p class="loading-sub" id="loading-sub">
-          The calculus admits no impatience.
-        </p>
+        <div class="key-label">BIT 3 · ×8</div>
       </div>
     </div>
-  </div>
 
-  <!-- ══════════════ RESULTS SCREEN ══════════════ -->
-  <div id="results-screen">
-    <div class="card" id="results-card">
-      <span class="corner-bl">✦</span><span class="corner-br">✦</span>
-      <!-- Content injected by JS -->
+    <!-- Spacebar on its own row -->
+    <div class="keys-row" style="margin-top:14px;">
+      <div class="key-block">
+        <div class="key-rect space-key" id="key-space">
+          <span class="key-name">SPACE</span>
+          <span class="finger-name">THUMB · BIT 4 · ×16</span>
+        </div>
+      </div>
     </div>
-    <button class="reset-btn" onclick="resetForm()">
-      ↩ &nbsp; Submit Another Subject to the Calculus
-    </button>
-    <button class="reset-btn" style="border-style:dashed; margin-top:10px;" onclick="showLedger('results')">
-      📜 &nbsp; Consult the Public Ledger of Recorded Subjects
-    </button>
-  </div>
 
-  <!-- ══════════════ LEDGER SCREEN ══════════════ -->
-  <div id="ledger-screen">
-    <div class="card">
-      <span class="corner-bl">✦</span><span class="corner-br">✦</span>
-      <div class="section-head"><h2>The Public Ledger of Social Physics</h2></div>
-      <p class="epigraph" style="margin-bottom:6px;">
-        "Society contains within itself the germs of all the crimes which are going to be committed;<br>
-        it is society which, in some sense, prepares these crimes."
-      </p>
-      <p class="epigraph-source" style="margin-bottom:22px;">— Adolphe Quetelet, <em>Treatise on Man</em>, 1835</p>
-      <p class="ledger-count" id="ledger-count"></p>
-      <div id="ledger-entries"></div>
+    <div class="register-display">
+      REGISTER:&nbsp;
+      <span class="bits" id="bits-display">
+        <span class="off" id="bit4">0</span><span class="off" id="bit3">0</span><span class="off" id="bit2">0</span><span class="off" id="bit1">0</span><span class="off" id="bit0">0</span>
+      </span>
+      &nbsp;=&nbsp;<span id="reg-decimal">0</span>
+      &nbsp;→&nbsp;<span id="reg-char">—</span>
     </div>
-    <button class="ledger-back-btn" onclick="hideLedger()">
-      ↩ &nbsp; Return to the Calculus
-    </button>
   </div>
 
-  <!-- ══════════════ COLOPHON ══════════════ -->
-  <div class="colophon">
-    <p>Based upon the authentic works of Lambert Adolphe Jacques Quetelet (1796–1874)</p>
-    <p><em>Astronome Royal · Directeur de l'Observatoire de Bruxelles · Père de la Statistique Sociale</em></p>
+  <!-- Zone B: Terminal -->
+  <div class="zone">
+    <div class="zone-label">ZONE B — TERMINAL OUTPUT</div>
+    <div class="terminal-box" id="terminal-text">
+      <!-- typed text rendered here -->
+      <span class="cursor" id="cursor-block"></span>
+    </div>
+    <div class="terminal-controls">
+      <div class="sound-row">
+        <label for="sound-toggle">CLACK SOUND</label>
+        <input type="checkbox" id="sound-toggle" checked>
+      </div>
+      <button class="retro-btn" id="clear-btn">[ CLEAR ]</button>
+    </div>
   </div>
 
-</div><!-- /container -->
+  <!-- Zone C: Training / Challenge -->
+  <div class="zone">
+    <div class="zone-label">ZONE C — BOOTSTRAPPING TRAINING MODULE</div>
+
+    <div class="status-msg" id="status-msg"></div>
+
+    <div class="challenge-quote" id="challenge-quote"></div>
+
+    <div class="progress-bar-wrap">
+      <div class="progress-bar-fill" id="progress-fill" style="width:0%"></div>
+    </div>
+
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; flex-wrap:wrap; gap:8px;">
+      <div class="cheat-toggle">
+        <input type="checkbox" id="cheat-toggle" checked>
+        <label for="cheat-toggle">SHOW CHEAT SHEET</label>
+      </div>
+      <button class="retro-btn" id="reset-challenge-btn">[ RESET CHALLENGE ]</button>
+    </div>
+
+    <div class="cheat-sheet" id="cheat-sheet"></div>
+  </div>
+
+</div>
 
 <script>
-// ─── Age slider ───────────────────────────────────────────────────────────────
-document.getElementById('age').addEventListener('input', function() {
-  document.getElementById('age-num').textContent = this.value;
-});
-
-// ─── Loading messages ─────────────────────────────────────────────────────────
-const LOADING_MSGS = [
-  ["Consulting the statistical tables of Brussels", "The calculus admits no impatience."],
-  ["Calculating your deviation from l'homme moyen", "Nature aims for the centre."],
-  ["Cross-referencing the criminal registers of 1830–1835", "The registers are inexorable."],
-  ["Measuring your physical oscillation from nature's ideal", "Weight increases as the square of height."],
-  ["Consulting the bell curve of moral propensity", "Free will is an illusion at scale."],
-  ["Tabulating birth circumstances in the cosmic ledger", "The parish registers do not lie."],
-  ["Applying the laws of Social Physics", "The mathematics require truth."],
-  ["Conferring with the Académie Royale des Sciences", "Your fate is nearly computed."],
-];
-let msgIdx = 0;
-let loadingInterval = null;
-let currentResult = null;     // holds { data, scores, report } for save functionality
-let ledgerFromScreen = 'form'; // which screen to return to from the ledger
-
-function rotateLoadingMsg() {
-  const pair = LOADING_MSGS[msgIdx % LOADING_MSGS.length];
-  document.getElementById('loading-msg').innerHTML =
-    pair[0] + '<span class="loading-dots">...</span>';
-  document.getElementById('loading-sub').textContent = pair[1];
-  msgIdx++;
-}
-
-// ─── Form submission ──────────────────────────────────────────────────────────
-document.getElementById('ledger-form').addEventListener('submit', function(e) {
-  e.preventDefault();
-
-  const age        = parseInt(document.getElementById('age').value);
-  const sex        = document.getElementById('sex').value;
-  const height     = parseFloat(document.getElementById('height').value);
-  const weight     = parseFloat(document.getElementById('weight').value);
-  const birthMonth = parseInt(document.getElementById('birth-month').value);
-  const birthTime  = document.getElementById('birth-time').value;
-  const season     = document.getElementById('season').value;
-  const marital    = document.getElementById('marital').value;
-
-  // Validate
-  let valid = true;
-  const checks = [
-    ['sex',    sex,        'err-sex'],
-    ['height', height > 0, 'err-height'],
-    ['weight', weight > 0, 'err-weight'],
-    ['month',  birthMonth, 'err-month'],
-    ['time',   birthTime,  'err-time'],
-    ['season', season,     'err-season'],
-    ['marital',marital,    'err-marital'],
-  ];
-  checks.forEach(([field, val, errId]) => {
-    const errEl = document.getElementById(errId);
-    if (!val) {
-      errEl.classList.add('show'); valid = false;
-    } else {
-      errEl.classList.remove('show');
-    }
-  });
-  if (!valid) return;
-
-  // Show loading
-  document.getElementById('form-screen').style.display  = 'none';
-  document.getElementById('loading-screen').style.display = 'block';
-  msgIdx = 0; rotateLoadingMsg();
-  loadingInterval = setInterval(rotateLoadingMsg, 1400);
-
-  setTimeout(function() {
-    clearInterval(loadingInterval);
-    const data   = { age, sex, height, weight, birthMonth, birthTime, season, marital };
-    const scores = calcScores(data);
-    const report = buildReport(data, scores);
-    document.getElementById('loading-screen').style.display = 'none';
-    renderResults(scores, report, data);
-    document.getElementById('results-screen').style.display = 'block';
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  }, 4800);
-});
-
-// ─── Scoring engine ───────────────────────────────────────────────────────────
-function calcScores(d) {
-  const { age, sex, height, weight, birthMonth, birthTime, season, marital } = d;
-
-  // 1. Physical Deviance (BMI-based)
-  // Quetelet himself invented the BMI (Quetelet Index = kg/m²) in 1832.
-  const bmi = weight / Math.pow(height / 100, 2);
-  const idealBMI = 22; // Lean 19th-c European working adult
-  const bmiDev = Math.abs(bmi - idealBMI);
-  const physicalScore = Math.min(100, Math.round(bmiDev * 5.5));
-  let physFlag;
-  if      (bmi < 16)              physFlag = 'cadaverous';
-  else if (bmi < 18.5)            physFlag = 'emaciated';
-  else if (bmi >= 18.5 && bmi < 25) physFlag = 'ideal';
-  else if (bmi < 30)              physFlag = 'stout';
-  else                            physFlag = 'monstrous';
-
-  // 2. Moral Deviance / Crime Propensity
-  // From Quetelet's criminal statistics: males 20-30 are the apex of violent crime propensity.
-  let moralScore = 0;
-  let crimeType = null;
-  if (sex === 'male') {
-    if (age >= 20 && age <= 30) {
-      // Bell peak at 25
-      const dist = Math.abs(age - 25);
-      moralScore = Math.round(90 - dist * 9);
-      crimeType = 'violent';
-    } else if (age < 20) {
-      moralScore = age < 15 ? 15 : Math.round(20 + age * 2);
-      crimeType = 'petty';
-    } else if (age <= 45) {
-      moralScore = Math.round(60 - (age - 30) * 2.5);
-      crimeType = age < 40 ? 'violent' : 'property';
-    } else {
-      moralScore = Math.max(8, Math.round(30 - (age - 45) * 0.8));
-      crimeType = 'property';
-    }
-  } else {
-    // Female: lower propensity, skewed toward property crimes
-    if (age >= 18 && age <= 30) {
-      moralScore = Math.round(18 + (age - 18) * 1.2);
-      crimeType = 'property';
-    } else if (age > 30 && age <= 50) {
-      moralScore = Math.round(32 - (age - 30) * 0.6);
-      crimeType = 'property';
-    } else {
-      moralScore = 12;
-      crimeType = 'property';
-    }
-  }
-  moralScore = Math.min(100, Math.max(0, moralScore));
-
-  // 3. Seasonal Volatility Index
-  // Quetelet found violent crimes peak in summer, property crimes peak in winter.
-  let seasonScore = 0;
-  let seasonFlag  = null;
-  if (season === 'summer') {
-    if (sex === 'male' && age >= 20 && age <= 30) {
-      seasonScore = 92; seasonFlag = 'violent_threat';
-    } else {
-      seasonScore = 52; seasonFlag = 'passionate';
-    }
-  } else if (season === 'winter') {
-    seasonScore = 62; seasonFlag = 'thief';
-  } else if (season === 'spring') {
-    seasonScore = 32; seasonFlag = 'restless';
-  } else {
-    seasonScore = 22; seasonFlag = 'melancholic';
-  }
-
-  // 4. Inherent Rebellion (birth circumstances + marital)
-  let rebellion = 0;
-  // Night births are statistical norm; day births are already deviant.
-  if (birthTime === 'day')             rebellion += 22;
-  // February is peak natality month; summer births are rarer/defiant.
-  if      (birthMonth >= 6 && birthMonth <= 8) rebellion += 22;
-  else if (birthMonth === 2)                   rebellion -= 8;
-  // Marital
-  if      (marital === 'single') rebellion += 18;
-  else if (marital === 'large')  rebellion += 22;
-  else                           rebellion -= 5;
-  rebellion = Math.min(100, Math.max(0, rebellion));
-
-  // Overall alignment (100 = perfect average)
-  const alignment = Math.max(0, Math.round(
-    100 - physicalScore * 0.28 - moralScore * 0.36 - seasonScore * 0.20 - rebellion * 0.16
-  ));
-
-  return {
-    bmi: bmi.toFixed(1),
-    physicalScore,  physFlag,
-    moralScore,     crimeType,
-    seasonScore,    seasonFlag,
-    rebellion,
-    alignment
-  };
-}
-
-// ─── Report generation ────────────────────────────────────────────────────────
-const MONTHS = ['January','February','March','April','May','June',
-                'July','August','September','October','November','December'];
-
-function buildReport(d, s) {
-  const { age, sex, height, weight, birthMonth, birthTime, season, marital } = d;
-  const { bmi, physFlag, moralScore, crimeType, seasonFlag, rebellion, alignment } = s;
-  const bName = MONTHS[birthMonth - 1];
-  const paras = [];
-  const flags = [];
-
-  // Opening
-  if      (alignment >= 85) paras.push(`Subject: ${age} years of age, ${sex}. I have consulted every table, every register, every actuarial column in this institution, and I am compelled to report something exceedingly rare: I can find almost nothing wrong with you. You converge upon l'homme moyen with a precision that would make Laplace weep. You have no distinguishing characteristics whatsoever. You are the centre of gravity of our social body — perfectly, beautifully, magnificently unremarkable. The bell curve offers you its highest accolade: it barely notices you.`);
-  else if (alignment >= 68) paras.push(`Subject: ${age} years of age, ${sex}. The tables have spoken with moderate approval. You represent a tolerable deviation from the ideal — not the pinnacle of statistical virtue, but not yet the sort of anomaly that causes concern at the prefecture. Nature aimed for the centre and struck somewhere nearby. One must acknowledge this modest performance, even if it falls somewhat short of mathematical magnificence.`);
-  else if (alignment >= 48) paras.push(`Subject: ${age} years of age, ${sex}. I have applied the full apparatus of Social Physics — criminal registers, natality tables, anthropometric records, seasonal crime indices — and the results are troubling. The calculus does not flatter you. You represent a meaningful oscillation from l'homme moyen in several respects. Society carries you as a weight upon its statistical body. The authorities would do well to take note.`);
-  else if (alignment >= 28) paras.push(`Subject: ${age} years of age, ${sex}. The numbers are unkind, and the tables are not given to mercy. Every column points to the same melancholy conclusion: you are a significant deviation from nature's arithmetic ideal. I have seen outliers before — some have reformed themselves through the disciplined pursuit of averageness. Most have not. The bell curve regards you with cold, mathematical disappointment.`);
-  else paras.push(`Subject: ${age} years of age, ${sex}. I have rarely encountered such statistical catastrophe in all my years at the Royal Observatory. The calculus has rendered its verdict, and it is damning. You are not merely deviant — you are an error in the social budget of civilisation. An anomaly so pronounced that the very bell curve designed to describe you recoils in embarrassment. If l'homme moyen is nature's masterpiece, you are what happens when the pen slips violently across the ledger.`);
-
-  // Physical assessment
-  if      (physFlag === 'ideal')      paras.push(`As regards your physical constitution: your Quetelet Index (${bmi}) falls within the acceptable range of the European mean. The body, at least, does not betray you here. Weight and height maintain a relationship that would not shame the anthropometric tables of Brussels. On the matter of your frame, I have nothing further to report to the prefecture.`);
-  else if (physFlag === 'emaciated')  { paras.push(`Your physical proportions are a source of concern (Quetelet Index: ${bmi}). You trend toward the emaciated — constitutionally fragile, the kind of frame that appears in the left tail of the mortality distribution. Nature aims for the centre of gravity; you are drifting toward the statistical margin like a consumptive clerk at a February fog. The actuarial tables regard your future with characteristic indifference.`); flags.push('PHYSICAL FLAG: Constitutionally sub-average frame. Elevated actuarial risk per the Brussels mortality tables.'); }
-  else if (physFlag === 'cadaverous') { paras.push(`Your physical proportions are alarming in the extreme (Quetelet Index: ${bmi}). You are dangerously far from the mean — a wraith, a whisper of a person. The mortality tables have already assigned you a column. Nature aims for the centre; you have drifted to the furthest periphery of biological viability. I would note this in the register, but the register suspects you may not require it long.`); flags.push('⚠ PHYSICAL FLAG: Extreme emaciation. Statistical proximity to the mortality register.'); }
-  else if (physFlag === 'stout')      { paras.push(`Your physical frame (Quetelet Index: ${bmi}) has accumulated beyond the ideal — a departure toward excessive accumulation that the anthropometric tables of Brussels note with mild disapproval. The body, like the social body, functions best when resources are distributed along the mean rather than concentrated in one place. This is not a moral judgment. It is a matter of arithmetic.`); flags.push('PHYSICAL FLAG: Above-average accumulation of material form. Deviation from natural proportion.'); }
-  else                                { paras.push(`Your physical proportions (Quetelet Index: ${bmi}) represent a terrifying oscillation from nature's ideal. You are, in the strictest statistical sense, an error in the physical budget of society — an anomaly so pronounced that the bell curve itself is strained. I coined the term "Quetelet Index" precisely to identify such deviations. Yours would not have surprised me. It would have saddened me.`); flags.push('⚠ PHYSICAL FLAG: Monstrous deviation from natural proportion. The tables are not surprised.'); }
-
-  // Moral / crime assessment
-  if (sex === 'male' && age >= 24 && age <= 26 && season === 'summer') {
-    paras.push(`I must strongly advise the appropriate authorities to monitor you with the utmost vigilance. You are ${age} years of age and male — the precise demographic apex for crimes of violent passion, as I demonstrated beyond reasonable doubt in the criminal registers of France and Belgium spanning 1826 to 1832. The summer heat, which my research shows inflames the blood and releases the lower passions from the restraint of reason, combines with your ${age} years to produce a statistical near-certainty of danger. Free will cannot extricate you from this arithmetic. You are not an individual so much as a probability — and that probability is deeply alarming.`);
-    flags.push('⚠ CRITICAL FLAG: Male, age ' + age + ', Summer season. Absolute peak of violent crime propensity. Notify the prefecture without delay.');
-  } else if (sex === 'male' && age >= 20 && age <= 30) {
-    paras.push(`Your age and sex place you with statistical exactitude within the zone of maximum criminal propensity as charted across the registers of France, Belgium, and Great Britain. The male between twenty and thirty years represents the most dangerous demographic in the social body — a fact I have presented to the Académie Royale and which the data have not once contradicted. The passions are at their absolute height; the reason has not yet gained full dominion over the appetites. This is not a judgment upon your character — it is merely an observation of your position on the curve.`);
-    if (season === 'summer') flags.push('⚠ MORAL FLAG: Prime demographic for violent crime. The summer season amplifies this risk to a dangerous degree.');
-    else if (season === 'winter') flags.push('MORAL FLAG: Peak violent propensity mitigated somewhat by winter; however, property crimes remain statistically elevated.');
-    else flags.push('MORAL FLAG: Peak male criminal propensity by demographic positioning. Monitor accordingly.');
-  } else if (sex === 'female' && season === 'winter') {
-    paras.push(`While your sex provides a degree of protection from the more violent categories of moral deviation — the scaffold, the prison hulks, the criminal dossier — your sex does not render you immune. The winter months, which my research shows concentrate the social mind upon survival and material want, introduce a statistical pressure toward crimes against property. The misery of cold and hunger is not selective. The data suggest an elevated propensity for the discreet appropriation of bread and fuel. I would advise, as a purely precautionary statistical measure, a wide berth around the bakeries.`);
-    flags.push('MORAL FLAG: Female, Winter. Elevated property crime propensity. The bakeries and coal merchants are statistically at risk.');
-  } else if (sex === 'female') {
-    paras.push(`Your sex provides a measure of statistical protection from the more dramatic categories of criminal deviance. The propensity for crimes of blood and passion is significantly lower among females — not, I would note, from any innate moral superiority, but from differences in physical constitution, social visibility, and the structure of opportunity as mapped across the criminal registers. Crimes of a subtler variety — against property, against social arrangements — remain statistically present in the data. The curve does not ignore you; it merely assigns you a different column.`);
-  } else if (sex === 'male' && age > 40) {
-    paras.push(`Your age has carried you past the summit of violent propensity. The fires of the twenty-fifth year have cooled. The data suggest that men past their prime criminal years tend toward one of two trajectories: respectable quiescence, or crimes of a more calculated and less passionate variety — financial deceptions, property irregularities, the misuse of institutional trust. The passions of the flesh give way, in time, to the passions of the ledger. The tables observe this transition with the equanimity of long experience.`);
-  } else if (sex === 'male' && age < 20) {
-    paras.push(`At ${age} years of age, you stand on the ascending slope of the crime propensity curve. You have not yet reached the summit — that lies ahead of you, between the ages of twenty and thirty. But the curve is already rising. The statistics of juvenile transgression, as documented in the registers of petty crime and vagrancy, show that you are already within the zone of increasing propensity. The calculus is watching your progress with the patient attention it devotes to all ascending trajectories.`);
-  }
-
-  // Birth circumstances
-  const isSummerBorn = birthMonth >= 6 && birthMonth <= 8;
-  if (birthTime === 'day' && isSummerBorn) {
-    paras.push(`Born in ${bName}, during daylight hours — a double departure from statistical convention at the very first moment of your existence. The natality tables of every civilised nation show that births peak at night, and that the month of February represents the apex of natality. Your arrival in the summer months, during daylight, establishes a pattern of statistical nonconformity that predates your first breath. You were born already an outlier. The register noted your arrival with something approaching alarm.`);
-    flags.push('BIRTH FLAG: Double statistical anomaly at origin. Day birth, summer month. Inherent nonconformity confirmed at point of entry into the census rolls.');
-  } else if (birthTime === 'day') {
-    paras.push(`Born in ${bName}, during daylight hours — a modest departure from the statistical norm at the very moment of your entry into the world. The midwifery records confirm that night births predominate in every district surveyed. Your daytime arrival represents an assertion of individuality you had no right to make, occurring as it did before you had drawn three breaths or been entered in the parish register. The bell curve noted your arrival with mild disapproval.`);
-  } else if (birthMonth === 2) {
-    paras.push(`Born in February — the peak month of natality per the registers of France, Belgium, Prussia, and Great Britain as I have compiled them. Your very birth was statistically unremarkable. In this office, we consider that the highest possible compliment a register can pay. You arrived precisely when the statistics predicted. I commend the efficiency of your origins.`);
-  } else {
-    paras.push(`Born in ${bName}, at night — your birth circumstances are within tolerable statistical parameters. The night birth is the norm, and your month of origin falls within the ordinary range of natality. ${isSummerBorn ? 'The summer birth is somewhat less common, but not remarkable enough to concern the authorities.' : 'Your entry into the census rolls was, in this respect at least, unremarkable.'} The register accepted you without annotation.`);
-  }
-
-  // Marital status
-  if (marital === 'proper') {
-    paras.push(`Your marital arrangement conforms to the statistically optimal configuration. The properly married individual represents the social average par excellence — anchored, accountable, their energies directed by domestic obligation and the civilising influence of the conjugal household. My research on mortality tables shows that married persons live longer and commit fewer crimes. This fact requires no embellishment. You have, in this regard at least, performed averageness admirably.`);
-  } else if (marital === 'single') {
-    paras.push(`You remain unmarried — a departure from the social contract that the statistics cannot overlook. The single individual introduces friction into the machinery of society. Unanchored, unaccountable, their energies undirected by the disciplines of domestic life. My mortality tables show, with uncomfortable clarity, that the unmarried die earlier, offend more frequently, and contribute less predictably to the social aggregate. I draw no moral conclusion from this observation. I simply present the arithmetic, and the arithmetic is not flattering.`);
-    flags.push('SOCIAL FLAG: Unmarried. Statistical accountability reduced. Energy expenditure undirected. The tables note this.');
-  } else if (marital === 'large') {
-    paras.push(`Your marital arrangement involves an irregular age differential — a configuration the social tables regard with the quiet suspicion they reserve for asymmetries. One party to this arrangement runs substantially ahead of their statistical trajectory; the other, behind. The result is a domestic arrangement that nature did not specifically plan for in the standard tables, though human nature has persistently produced it. The registers will note the irregularity without further comment.`);
-    flags.push('SOCIAL FLAG: Irregular conjugal age differential. Statistical asymmetry in domestic arrangement. Entered in the record.');
-  }
-
-  // Closing
-  if      (alignment >= 85) paras.push(`In conclusion: you are splendidly, marvelously average. The sum total of your characteristics converges upon the mean with an elegance that I find, if I am honest, slightly moving. I have nothing further to report to the authorities at this time. You are, in the most mathematically precise sense of the term, nobody. Congratulations.`);
-  else if (alignment >= 68) paras.push(`In conclusion: you are somewhat off-centre, but not dangerously so. Society will absorb you. The tables note your deviations but do not yet demand intervention. Aspire toward the mean, and the mean will reward you with statistical invisibility — the greatest gift a rational society can bestow upon an imperfect subject.`);
-  else if (alignment >= 48) paras.push(`In conclusion: the calculus has rendered a concerning but not terminal judgment. You deviate from l'homme moyen in several measurable respects. I recommend you examine these deviations and, where possible, correct them — not for your own sake, for individual welfare is statistically secondary to the welfare of the aggregate, but for the sake of the social body of which you are an imperfect component.`);
-  else if (alignment >= 28) paras.push(`In conclusion: you are a significant statistical burden upon the social body. The tables do not lie, and they do not soften their verdicts for the benefit of individual feelings. Every calculation confirms your distance from the ideal. I would urge corrective measures, were I not acutely aware that outliers of this magnitude rarely succeed in moving themselves toward the centre under their own power. The bell curve is not a ladder. It is a description.`);
-  else paras.push(`In conclusion: you are a monstrosity of the statistical order — and I use that word in its precise mathematical sense, not as an insult, but as a classification. I have spent forty years reading actuarial tables, criminal registers, natality records, and anthropometric surveys. You represent an accumulation of deviations so complete as to constitute, in aggregate, a species of anti-average. The mean looks upon your profile and does not recognise a fellow citizen. It recognises an error. I have entered you in the record accordingly.`);
-
-  return { paras, flags };
-}
-
-// ─── SVG gauge helpers ────────────────────────────────────────────────────────
-function ptOnArc(cx, cy, r, pct) {
-  // pct=0 → left, pct=100 → right, arc goes through top
-  const angle = (1 - pct / 100) * Math.PI;
-  return {
-    x: cx + r * Math.cos(angle),
-    y: cy - r * Math.sin(angle)
-  };
-}
-
-function arcSeg(cx, cy, r, p0, p1) {
-  const a = ptOnArc(cx, cy, r, p0);
-  const b = ptOnArc(cx, cy, r, p1);
-  const large = (p1 - p0) > 50 ? 1 : 0;
-  return `M ${a.x.toFixed(2)} ${a.y.toFixed(2)} A ${r} ${r} 0 ${large} 0 ${b.x.toFixed(2)} ${b.y.toFixed(2)}`;
-}
-
-// ─── Render results ───────────────────────────────────────────────────────────
-function renderResults(scores, report, data) {
-  currentResult = { data, scores, report };
-  const CX = 150, CY = 148, R = 112, SW = 18;
-
-  const zoneColors = ['#8b1a1a','#c86010','#c8a010','#4a8b20','#1a6b10'];
-  let zonesSVG = '';
-  zoneColors.forEach((col, i) => {
-    const p0 = i * 20, p1 = (i + 1) * 20;
-    zonesSVG += `<path d="${arcSeg(CX,CY,R,p0,p1)}" stroke="${col}" stroke-width="${SW}" fill="none" opacity="0.5" stroke-linecap="butt"/>`;
-  });
-
-  // Score arc (thin dark overlay)
-  const scoreArc = arcSeg(CX, CY, R, 0, scores.alignment);
-
-  // Needle
-  const np = ptOnArc(CX, CY, R - 10, scores.alignment);
-
-  // Score label
-  let sLabel;
-  if      (scores.alignment >= 85) sLabel = "L'Homme Moyen Incarnate";
-  else if (scores.alignment >= 68) sLabel = "Tolerable Deviation";
-  else if (scores.alignment >= 48) sLabel = "Notable Anomaly";
-  else if (scores.alignment >= 28) sLabel = "Significant Deviant";
-  else                             sLabel = "Statistical Catastrophe";
-
-  // Physical label
-  const physLabels = {
-    cadaverous: 'Dangerously emaciated',
-    emaciated:  'Below the mean',
-    ideal:      'Within acceptable range',
-    stout:      'Above the mean',
-    monstrous:  'Severe deviation'
-  };
-  const moralDesc = (data.sex === 'male' && data.age >= 20 && data.age <= 30)
-    ? 'Peak violent propensity'
-    : (scores.crimeType === 'violent' ? 'Elevated violent risk'
-      : scores.crimeType === 'property' ? 'Property crime tendency'
-      : 'Below threshold');
-  const seasonDesc = {
-    violent_threat: 'Immediate violent risk',
-    passionate:     'Passions inflamed',
-    thief:          'Property crime pressure',
-    restless:       'Moderate volatility',
-    melancholic:    'Seasonal equilibrium'
-  }[scores.seasonFlag] || '';
-
-  const flagsHTML = report.flags.map(f =>
-    `<div class="flag-block">${f}</div>`).join('');
-  const verdictHTML = report.paras.map(p => `<p>${p}</p>`).join('');
-
-  document.getElementById('results-card').innerHTML = `
-    <span class="corner-bl">✦</span><span class="corner-br">✦</span>
-    <div class="result-title">The Judgement of AI-dolphe Quetelet</div>
-    <p class="result-sub"><em>Rendered at the Royal Observatory of Brussels, by mathematical necessity and without appeal</em></p>
-
-    <div class="section-head"><h2>L'Homme Moyen Alignment Index</h2></div>
-
-    <div class="gauge-wrap">
-      <svg class="gauge-svg" viewBox="0 0 300 175" xmlns="http://www.w3.org/2000/svg">
-        <!-- Background track -->
-        <path d="${arcSeg(CX,CY,R,0,100)}" stroke="#d4b87a" stroke-width="${SW}" fill="none" stroke-linecap="butt"/>
-        <!-- Color zones -->
-        ${zonesSVG}
-        <!-- Score progress arc -->
-        <path d="${scores.alignment > 0 ? arcSeg(CX,CY,R-1,0,scores.alignment) : ''}"
-              stroke="#2c1810" stroke-width="6" fill="none" stroke-linecap="round" opacity="0.85"/>
-        <!-- Needle -->
-        <line x1="${CX}" y1="${CY}" x2="${np.x.toFixed(2)}" y2="${np.y.toFixed(2)}"
-              stroke="#2c1810" stroke-width="3" stroke-linecap="round"/>
-        <circle cx="${CX}" cy="${CY}" r="7" fill="#5c3e00"/>
-        <circle cx="${CX}" cy="${CY}" r="4" fill="#f5e9d0"/>
-        <circle cx="${CX}" cy="${CY}" r="2" fill="#8b6914"/>
-        <!-- Zone labels -->
-        <text x="20" y="${CY+20}" fill="#8b1a1a" font-size="8.5" font-family="Georgia,serif" opacity="0.85">MONSTROUS</text>
-        <text x="218" y="${CY+20}" fill="#1a6b10" font-size="8.5" font-family="Georgia,serif" opacity="0.85">AVERAGE</text>
-      </svg>
-      <div class="gauge-score-html">${scores.alignment}%</div>
-      <div class="gauge-verdict-html">${sLabel}</div>
-    </div>
-
-    <div class="breakdown-grid">
-      <div class="breakdown-item">
-        <div class="breakdown-item-label">Physical Deviance</div>
-        <div class="bar-track"><div class="bar-fill" style="width:${scores.physicalScore}%"></div></div>
-        <div class="breakdown-item-note">BMI ${scores.bmi} — ${physLabels[scores.physFlag]}</div>
-      </div>
-      <div class="breakdown-item">
-        <div class="breakdown-item-label">Moral Propensity</div>
-        <div class="bar-track"><div class="bar-fill" style="width:${scores.moralScore}%"></div></div>
-        <div class="breakdown-item-note">${moralDesc}</div>
-      </div>
-      <div class="breakdown-item">
-        <div class="breakdown-item-label">Seasonal Volatility</div>
-        <div class="bar-track"><div class="bar-fill" style="width:${scores.seasonScore}%"></div></div>
-        <div class="breakdown-item-note">${seasonDesc}</div>
-      </div>
-      <div class="breakdown-item">
-        <div class="breakdown-item-label">Inherent Rebellion</div>
-        <div class="bar-track"><div class="bar-fill" style="width:${scores.rebellion}%"></div></div>
-        <div class="breakdown-item-note">${getRebellionNote(data)}</div>
-      </div>
-    </div>
-
-    <div class="divider">· &nbsp; · &nbsp; · &nbsp; · &nbsp; ·</div>
-
-    <div class="verdict-box">
-      <div class="verdict-box-title">— The Character Assessment —</div>
-      ${flagsHTML}
-      <div class="verdict-body">${verdictHTML}</div>
-      <div class="signature">
-        — A. Quetelet<br>
-        <em>Directeur de l'Observatoire Royal de Bruxelles</em><br>
-        <em>Membre de l'Académie Royale des Sciences de Belgique</em>
-      </div>
-    </div>
-
-    <div class="save-section">
-      <div class="save-section-title">— Register this Judgment in the Public Ledger —</div>
-      <p class="save-instruction">
-        Enter a designation for the record. A pseudonym is perfectly acceptable —<br>
-        privacy is a statistical variable like any other.
-      </p>
-      <div class="save-name-row">
-        <input type="text" class="save-name-input" id="save-name"
-               placeholder="Your designation for the record…" maxlength="60">
-        <button type="button" class="pseudo-btn" onclick="fillPseudonym()">✦ Pseudonym</button>
-      </div>
-      <button type="button" class="save-btn" id="save-btn" onclick="saveLedgerEntry()">
-        ✒ &nbsp; Register in the Ledger
-      </button>
-      <div class="save-confirm" id="save-confirm"></div>
-      <div class="save-err" id="save-err">
-        A designation is required before this judgment may be entered in the record.
-      </div>
-    </div>
-  `;
-}
-
-function getRebellionNote(d) {
-  const parts = [];
-  if (d.birthTime === 'day')                               parts.push('Day birth');
-  if (d.birthMonth >= 6 && d.birthMonth <= 8)              parts.push('Summer birth');
-  if (d.marital === 'single')                              parts.push('Unmarried');
-  if (d.marital === 'large')                               parts.push('Irregular union');
-  if (d.birthMonth === 2 && d.birthTime === 'night' && d.marital === 'proper')
-    return 'Conforming to norm in all respects';
-  return parts.length ? parts.join(', ') : 'Within statistical norm';
-}
-
-function resetForm() {
-  document.getElementById('results-screen').style.display = 'none';
-  document.getElementById('form-screen').style.display   = 'block';
-  window.scrollTo({ top: 0, behavior: 'smooth' });
-}
-
-// ─── Ledger persistence (localStorage) ───────────────────────────────────────
-const LEDGER_KEY = 'quetelet_ledger';
-
-function loadLedger() {
-  try { return JSON.parse(localStorage.getItem(LEDGER_KEY) || '[]'); }
-  catch { return []; }
-}
-
-function saveLedgerEntry() {
-  const nameEl  = document.getElementById('save-name');
-  const confirmEl = document.getElementById('save-confirm');
-  const errEl   = document.getElementById('save-err');
-  const saveBtn = document.getElementById('save-btn');
-  const name    = nameEl.value.trim();
-
-  if (!name) { errEl.classList.add('show'); return; }
-  errEl.classList.remove('show');
-  if (!currentResult) return;
-
-  const { data, scores, report } = currentResult;
-  const entry = {
-    id:       Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
-    name:     name,
-    savedAt:  new Date().toISOString(),
-    data:     data,
-    scores: {
-      alignment:     scores.alignment,
-      physicalScore: scores.physicalScore,
-      physFlag:      scores.physFlag,
-      bmi:           scores.bmi,
-      moralScore:    scores.moralScore,
-      crimeType:     scores.crimeType,
-      seasonScore:   scores.seasonScore,
-      seasonFlag:    scores.seasonFlag,
-      rebellion:     scores.rebellion,
-    },
-    flags:   report.flags,
-    verdict: report.paras[0] || '',
-  };
-
-  const all = loadLedger();
-  all.push(entry);
-  localStorage.setItem(LEDGER_KEY, JSON.stringify(all));
-
-  confirmEl.innerHTML =
-    `The judgment of <em>${escapeHTML(name)}</em> has been entered in the Public Ledger of Social Physics. ` +
-    `The record is permanent. The calculus does not offer revisions.`;
-  confirmEl.classList.add('show');
-  saveBtn.disabled = true;
-  nameEl.disabled  = true;
-  document.querySelector('.pseudo-btn').disabled = true;
-}
-
-// ─── Pseudonym generator ──────────────────────────────────────────────────────
-const PSEUDONYMS = {
-  male: [
-    'M. A. Dupont, Bruxelles', 'Le Citoyen J. Bertrand', 'Dr. H. Fontaine',
-    'Prof. G. Moreau, Liège', 'M. V. Lacroix', 'Le Sr. E. de Namur',
-    'M. F. Delacroix', 'Insp. B. Charlier', 'Dr. P. Renard, Gand',
-    'M. R. Vanlook', 'Le Cit. C. Berthier', 'M. T. Périer',
-  ],
-  female: [
-    'Mme. A. Dupont, Bruxelles', 'La Citoyenne V. Moreau', 'Mlle. H. Fontaine',
-    'La Veuve Bertrand', 'Mme. E. Lacroix, Liège', 'La Demoiselle L. Renard',
-    'Mme. G. de Namur', 'Mlle. C. Charlier', 'La Cit. P. Vanlook',
-    'Mme. R. Périer', 'Mlle. T. Delacroix', 'La Veuve M. Berthier',
-  ],
-  neutral: [
-    'Subject B., Rue du Midi', 'A. N. Other, Belgium', 'Sujet sans nom',
-    'The Monitored One', 'A Statistical Anomaly', 'Dossier Anonyme',
-    'An Anonymous Citizen of Brussels', "Sujet de l'étude, No. 1",
-  ],
+// ─── Chord Dictionary ───────────────────────────────────────────────────────
+// Keys: numeric chord value (1–31)
+// Bit layout: bit4=Space(16), bit3=F(8), bit2=D(4), bit1=S(2), bit0=A(1)
+const CHORD_MAP = {
+   1: 'a',   2: 'b',   3: 'c',   4: 'd',   5: 'e',
+   6: 'f',   7: 'g',   8: 'h',   9: 'i',  10: 'j',
+  11: 'k',  12: 'l',  13: 'm',  14: 'n',  15: 'o',
+  16: 'p',  17: 'q',  18: 'r',  19: 's',  20: 't',
+  21: 'u',  22: 'v',  23: 'w',  24: 'x',  25: 'y',
+  26: 'z',
+  27: ' ',  // a+s+f+space  (1+2+8+16=27)
+  31: '\b', // all five keys (backspace)
 };
 
-function fillPseudonym() {
-  const sex  = currentResult ? currentResult.data.sex : null;
-  const pool = sex === 'male'   ? PSEUDONYMS.male
-             : sex === 'female' ? PSEUDONYMS.female
-             : PSEUDONYMS.neutral;
-  document.getElementById('save-name').value = pool[Math.floor(Math.random() * pool.length)];
+// Reverse lookup: char → chord value (for cheat sheet & challenge)
+const CHAR_TO_CHORD = {};
+for (const [val, ch] of Object.entries(CHORD_MAP)) {
+  if (!(ch in CHAR_TO_CHORD)) CHAR_TO_CHORD[ch] = parseInt(val);
 }
 
-// ─── Ledger screen ────────────────────────────────────────────────────────────
-function showLedger(fromScreen) {
-  ledgerFromScreen = fromScreen || 'form';
-  document.getElementById('form-screen').style.display    = 'none';
-  document.getElementById('results-screen').style.display = 'none';
-  document.getElementById('ledger-screen').style.display  = 'block';
-  window.scrollTo({ top: 0, behavior: 'smooth' });
-  renderLedger();
+// Key → bit weight
+const KEY_BITS = {
+  'a': 1, 's': 2, 'd': 4, 'f': 8, ' ': 16
+};
+const CHORD_KEYS = ['a','s','d','f',' '];
+
+function chordToBitString(val) {
+  return [
+    (val >> 4) & 1,
+    (val >> 3) & 1,
+    (val >> 2) & 1,
+    (val >> 1) & 1,
+    (val >> 0) & 1,
+  ].join('');
 }
 
-function hideLedger() {
-  document.getElementById('ledger-screen').style.display = 'none';
-  if (ledgerFromScreen === 'results') {
-    document.getElementById('results-screen').style.display = 'block';
+// Human-readable key names for chord value
+function chordToKeyNames(val) {
+  const names = [];
+  if (val & 1)  names.push('A');
+  if (val & 2)  names.push('S');
+  if (val & 4)  names.push('D');
+  if (val & 8)  names.push('F');
+  if (val & 16) names.push('SPC');
+  return names.join('+');
+}
+
+// ─── State ──────────────────────────────────────────────────────────────────
+let pressedKeys = new Set();
+let currentRegister = 0;
+let typedText = '';
+
+const CHALLENGE_QUOTE = "The complexity of the problems facing mankind is growing faster than our ability to solve them.";
+let challengePos = 0;
+
+// ─── DOM Refs ────────────────────────────────────────────────────────────────
+const keyEls = {
+  'a': document.getElementById('key-a'),
+  's': document.getElementById('key-s'),
+  'd': document.getElementById('key-d'),
+  'f': document.getElementById('key-f'),
+  ' ': document.getElementById('key-space'),
+};
+const bitEls = [
+  document.getElementById('bit0'),
+  document.getElementById('bit1'),
+  document.getElementById('bit2'),
+  document.getElementById('bit3'),
+  document.getElementById('bit4'),
+];
+const regDecEl   = document.getElementById('reg-decimal');
+const regCharEl  = document.getElementById('reg-char');
+const terminalEl = document.getElementById('terminal-text');
+const cursorEl   = document.getElementById('cursor-block');
+const clearBtn   = document.getElementById('clear-btn');
+const soundToggle= document.getElementById('sound-toggle');
+const cheatToggle= document.getElementById('cheat-toggle');
+const cheatSheet = document.getElementById('cheat-sheet');
+const quoteEl    = document.getElementById('challenge-quote');
+const progressEl = document.getElementById('progress-fill');
+const statusEl   = document.getElementById('status-msg');
+const resetBtn   = document.getElementById('reset-challenge-btn');
+const flashEl    = document.getElementById('commit-flash');
+
+// ─── Audio (Web Audio API clack) ─────────────────────────────────────────────
+let audioCtx = null;
+function getAudioCtx() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  return audioCtx;
+}
+function playClack() {
+  if (!soundToggle.checked) return;
+  try {
+    const ctx = getAudioCtx();
+    // Short burst of filtered noise → mechanical clack
+    const bufferSize = ctx.sampleRate * 0.05;
+    const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+    const data = buffer.getChannelData(0);
+    for (let i = 0; i < bufferSize; i++) data[i] = (Math.random() * 2 - 1);
+
+    const source = ctx.createBufferSource();
+    source.buffer = buffer;
+
+    const filter = ctx.createBiquadFilter();
+    filter.type = 'bandpass';
+    filter.frequency.value = 1800;
+    filter.Q.value = 0.8;
+
+    const gainNode = ctx.createGain();
+    gainNode.gain.setValueAtTime(0.55, ctx.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.06);
+
+    source.connect(filter);
+    filter.connect(gainNode);
+    gainNode.connect(ctx.destination);
+    source.start();
+    source.stop(ctx.currentTime + 0.08);
+  } catch(e) {}
+}
+
+// ─── Hint keys (Zone A glow for next challenge char) ─────────────────────────
+function updateHintKeys() {
+  const quoteLower = CHALLENGE_QUOTE.toLowerCase();
+  let hintVal = 0;
+  if (challengePos < quoteLower.length) {
+    const nextCh = quoteLower[challengePos];
+    hintVal = CHAR_TO_CHORD[nextCh] ?? 0;
+  }
+  // Map bit positions to key identifiers
+  const bitToKey = { 0: 'a', 1: 's', 2: 'd', 3: 'f', 4: ' ' };
+  for (let bit = 0; bit < 5; bit++) {
+    const needed = (hintVal >> bit) & 1;
+    keyEls[bitToKey[bit]].classList.toggle('hint', needed === 1);
+  }
+}
+
+// ─── Register UI update ───────────────────────────────────────────────────────
+function updateRegisterDisplay() {
+  const val = currentRegister;
+  for (let i = 0; i < 5; i++) {
+    const on = (val >> i) & 1;
+    bitEls[i].textContent = on ? '1' : '0';
+    bitEls[i].className = on ? 'on' : 'off';
+  }
+  regDecEl.textContent = val;
+  const ch = CHORD_MAP[val];
+  if (!ch) {
+    regCharEl.textContent = val > 0 ? '?' : '—';
+  } else if (ch === ' ') {
+    regCharEl.textContent = '[SPACE]';
+  } else if (ch === '\b') {
+    regCharEl.textContent = '[BKSP]';
   } else {
-    document.getElementById('form-screen').style.display = 'block';
-  }
-  window.scrollTo({ top: 0, behavior: 'smooth' });
-}
-
-function renderLedger() {
-  const entries   = loadLedger();
-  const countEl   = document.getElementById('ledger-count');
-  const container = document.getElementById('ledger-entries');
-
-  if (entries.length === 0) {
-    countEl.textContent = '';
-    container.innerHTML =
-      `<div class="ledger-empty">
-         The Ledger is empty.<br>
-         No subjects have yet been registered in the record.<br>
-         <em>The calculus awaits its first entry.</em>
-       </div>`;
-    return;
+    regCharEl.textContent = ch.toUpperCase();
   }
 
-  countEl.textContent =
-    `${entries.length} subject${entries.length !== 1 ? 's' : ''} entered in the register`;
-
-  const sorted = [...entries].reverse(); // newest first
-  container.innerHTML = sorted.map((e, i) => {
-    const serial = String(entries.length - i).padStart(3, '0');
-    const badgeColor = e.scores.alignment >= 85 ? '#1a6b10'
-                     : e.scores.alignment >= 68 ? '#4a8b20'
-                     : e.scores.alignment >= 48 ? '#b08010'
-                     : e.scores.alignment >= 28 ? '#c86010'
-                     : '#8b1a1a';
-    const sLabel = e.scores.alignment >= 85 ? "L'Homme Moyen"
-                 : e.scores.alignment >= 68 ? 'Tolerable Deviation'
-                 : e.scores.alignment >= 48 ? 'Notable Anomaly'
-                 : e.scores.alignment >= 28 ? 'Significant Deviant'
-                 : 'Statistical Catastrophe';
-
-    const flagsHTML = e.flags.length
-      ? `<div class="dossier-flags">` +
-        e.flags.map(f => {
-          const clean = f.replace(/^⚠\s*/, '').replace(/^[A-Z ]+FLAG:\s*/i, '');
-          const trunc = clean.length > 72 ? clean.slice(0, 72) + '…' : clean;
-          return `<span class="dossier-flag-tag">${escapeHTML(trunc)}</span>`;
-        }).join('') +
-        `</div>`
-      : '';
-
-    const excerpt = e.verdict
-      ? `<div class="dossier-excerpt">"${escapeHTML(e.verdict.slice(0, 220))}${e.verdict.length > 220 ? '…' : ''}"</div>`
-      : '';
-
-    return `
-      <div class="dossier-card">
-        <div class="dossier-header">
-          <span class="dossier-num">Dossier N° ${serial}</span>
-          <span class="dossier-name">${escapeHTML(e.name)}</span>
-          <span class="dossier-date">${formatLedgerDate(e.savedAt)}</span>
-        </div>
-        <div class="dossier-score-row">
-          <span class="dossier-badge" style="color:${badgeColor};border-color:${badgeColor};">${e.scores.alignment}%</span>
-          <span class="dossier-sublabel">${sLabel}</span>
-          <span class="dossier-meta">${e.data.age} yrs · ${e.data.sex} · ${e.data.season}</span>
-        </div>
-        <div class="dossier-mini-bars">
-          ${miniBar('Physical',  e.scores.physicalScore)}
-          ${miniBar('Moral',     e.scores.moralScore)}
-          ${miniBar('Seasonal',  e.scores.seasonScore)}
-          ${miniBar('Rebellion', e.scores.rebellion)}
-        </div>
-        ${flagsHTML}
-        ${excerpt}
-      </div>`;
-  }).join('');
+  // Highlight cheat sheet entry
+  document.querySelectorAll('.cheat-entry').forEach(el => {
+    el.classList.toggle('highlight', parseInt(el.dataset.val) === val);
+  });
 }
 
-function miniBar(label, value) {
-  return `<div class="dossier-mini-wrap">
-    <div class="dossier-mini-label">${label}</div>
-    <div class="dossier-mini-track"><div class="dossier-mini-fill" style="width:${value}%"></div></div>
-  </div>`;
+// ─── Terminal render ─────────────────────────────────────────────────────────
+function renderTerminal() {
+  // Re-insert text before cursor
+  const fragment = document.createDocumentFragment();
+  const textNode = document.createTextNode(typedText);
+  fragment.appendChild(textNode);
+  fragment.appendChild(cursorEl);
+  terminalEl.innerHTML = '';
+  terminalEl.appendChild(fragment);
 }
 
-function escapeHTML(str) {
-  return String(str)
-    .replace(/&/g,'&amp;').replace(/</g,'&lt;')
-    .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+// ─── Challenge render ────────────────────────────────────────────────────────
+function renderChallenge() {
+  quoteEl.innerHTML = '';
+  const quoteLower = CHALLENGE_QUOTE.toLowerCase();
+  for (let i = 0; i < quoteLower.length; i++) {
+    const span = document.createElement('span');
+    span.className = 'char';
+    const displayChar = CHALLENGE_QUOTE[i]; // original case for display
+    span.textContent = displayChar;
+    if (i < challengePos) {
+      span.classList.add('matched');
+    } else if (i === challengePos) {
+      span.classList.add('cursor-pos', 'pending');
+    } else {
+      span.classList.add('pending');
+    }
+    quoteEl.appendChild(span);
+  }
+  const pct = Math.round((challengePos / quoteLower.length) * 100);
+  progressEl.style.width = pct + '%';
+
+  if (challengePos >= quoteLower.length) {
+    statusEl.textContent = '[ CHALLENGE COMPLETE — AUGMENTING HUMAN INTELLECT ]';
+    statusEl.className = 'status-msg success';
+  } else {
+    const nextCh = quoteLower[challengePos];
+    const val = CHAR_TO_CHORD[nextCh];
+    if (val !== undefined) {
+      statusEl.textContent = 'NEXT: "' + (nextCh === ' ' ? 'SPACE' : nextCh.toUpperCase()) + '"  →  CHORD ' + chordToKeyNames(val) + '  [' + val + ']';
+    } else {
+      statusEl.textContent = '';
+    }
+    statusEl.className = 'status-msg';
+  }
+
+  updateHintKeys();
 }
 
-function formatLedgerDate(iso) {
-  const d = new Date(iso);
-  const months = ['January','February','March','April','May','June',
-                  'July','August','September','October','November','December'];
-  return `${d.getDate()} ${months[d.getMonth()]}, Anno ${d.getFullYear()}`;
+// ─── Commit chord ────────────────────────────────────────────────────────────
+function commitChord(val) {
+  const ch = CHORD_MAP[val];
+  if (!ch) return; // undefined chord, ignore
+
+  playClack();
+
+  // Flash screen
+  flashEl.classList.add('flash');
+  setTimeout(() => flashEl.classList.remove('flash'), 80);
+
+  if (ch === '\b') {
+    if (typedText.length > 0) typedText = typedText.slice(0, -1);
+  } else {
+    typedText += ch;
+  }
+  renderTerminal();
+
+  // Advance challenge if matching
+  const quoteLower = CHALLENGE_QUOTE.toLowerCase();
+  if (ch !== '\b' && challengePos < quoteLower.length) {
+    if (ch === quoteLower[challengePos]) {
+      challengePos++;
+    }
+    // (we don't penalise wrong chars — just don't advance)
+  }
+  renderChallenge();
 }
+
+// ─── Key event handlers ───────────────────────────────────────────────────────
+document.addEventListener('keydown', (e) => {
+  const key = e.key === ' ' ? ' ' : e.key.toLowerCase();
+  if (!KEY_BITS.hasOwnProperty(key)) return;
+
+  e.preventDefault();
+
+  if (!pressedKeys.has(key)) {
+    pressedKeys.add(key);
+    currentRegister |= KEY_BITS[key];
+    keyEls[key].classList.add('active');
+    updateRegisterDisplay();
+  }
+});
+
+document.addEventListener('keyup', (e) => {
+  const key = e.key === ' ' ? ' ' : e.key.toLowerCase();
+  if (!KEY_BITS.hasOwnProperty(key)) return;
+
+  e.preventDefault();
+
+  pressedKeys.delete(key);
+  // Note: do NOT clear the register bit yet — we want to commit on full release
+  keyEls[key].classList.remove('active');
+
+  // All keys released → commit
+  if (pressedKeys.size === 0) {
+    const val = currentRegister;
+    currentRegister = 0;
+    updateRegisterDisplay();
+    if (val > 0) commitChord(val);
+  }
+});
+
+// Block spacebar scrolling at window level too
+window.addEventListener('keydown', (e) => {
+  if (e.key === ' ') e.preventDefault();
+}, { passive: false });
+
+// ─── Buttons ──────────────────────────────────────────────────────────────────
+clearBtn.addEventListener('click', () => {
+  typedText = '';
+  renderTerminal();
+});
+
+resetBtn.addEventListener('click', () => {
+  challengePos = 0;
+  renderChallenge();
+});
+
+// ─── Cheat Sheet toggle ───────────────────────────────────────────────────────
+cheatToggle.addEventListener('change', () => {
+  cheatSheet.style.display = cheatToggle.checked ? 'grid' : 'none';
+});
+
+// ─── Build Cheat Sheet ────────────────────────────────────────────────────────
+function buildCheatSheet() {
+  cheatSheet.innerHTML = '';
+  // All 31 possible chords
+  for (let val = 1; val <= 31; val++) {
+    const ch = CHORD_MAP[val];
+    const entry = document.createElement('div');
+    entry.className = 'cheat-entry';
+    entry.dataset.val = val;
+
+    let display;
+    if (ch === ' ')  display = '␣';
+    else if (ch === '\b') display = '⌫';
+    else if (ch)     display = ch.toUpperCase();
+    else             display = '—';
+
+    entry.innerHTML = `
+      <span class="char-glyph">${display}</span>
+      <span class="chord-bits">${chordToBitString(val)}</span>
+      <span class="chord-keys">${ch ? chordToKeyNames(val) : '?'}</span>
+    `;
+    cheatSheet.appendChild(entry);
+  }
+}
+
+// ─── Init ────────────────────────────────────────────────────────────────────
+buildCheatSheet();
+renderTerminal();
+renderChallenge();
+updateRegisterDisplay();
 </script>
 </body>
 </html>
